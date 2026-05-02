@@ -5,10 +5,8 @@
 
 [functions]
   node_bundler = "esbuild"
-  timeout      = 26
 
-# SPA fallback — all routes return index.html so React Router handles them
 [[redirects]]
-  from   = "/*"
-  to     = "/index.html"
+  from = "/*"
+  to = "/index.html"
   status = 200
