@@ -68,6 +68,19 @@ export default function App() {
     }
 
     restoreSession()
+
+    // Keep user state in sync with auth events fired from other pages (e.g. Success.jsx)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        setUser(session.user)
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null)
+        setSiteHtml(null)
+        setBusinessData(null)
+      }
+    })
+
+    return () => subscription.unsubscribe()
   }, [])
 
   // ── Called by Onboarding after auth ───────────────────────
