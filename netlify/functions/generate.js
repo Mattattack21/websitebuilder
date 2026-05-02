@@ -140,11 +140,13 @@ SECTIONS (in order):
 6. FOOTER — name, phone, email, address, socials, copyright.
 7. FIXED MOBILE BAR — sticky "📞 Call Us Now" at bottom, tel:${telDigits}.${photoBase64 ? `\n8. PHOTO — place provided photo in hero/about, src="__BUSINESS_PHOTO__".` : ''}
 
-RULES:
-- Output ONLY raw HTML. Start with <!DOCTYPE html>, end with </html>. No markdown or fences.
-- All CSS in one <style> tag. No external resources.
-- Mobile-first, looks great at 375px. Desktop media queries.
-- Apply theme deeply — colors, type, spacing. Write realistic copy for this specific business.`
+OUTPUT FORMAT — CRITICAL:
+- Your response MUST start with exactly: <!DOCTYPE html>
+- Your response MUST end with exactly: </html>
+- Do NOT write anything before <!DOCTYPE html> or after </html>
+- Do NOT use markdown, code fences, backticks, or any explanation text
+- ALL CSS must be inside a single <style> tag in <head> — no external stylesheets or CDN links
+- Mobile-first responsive design, looks great at 375px wide`
 
   const messageContent = [{ type: 'text', text: prompt }]
   if (photoBase64) {
@@ -160,11 +162,12 @@ RULES:
     messages: [{ role: 'user', content: messageContent }],
   })
 
-  let html = message.content[0].text
-    .replace(/^```html\s*/i, '')
-    .replace(/^```\s*/i, '')
-    .replace(/\s*```\s*$/, '')
-    .trim()
+  let raw = message.content[0].text.trim()
+  // Strip code fences if Claude wrapped the output
+  raw = raw.replace(/^```[\w]*\s*/i, '').replace(/\s*```\s*$/i, '').trim()
+  // Extract the HTML document — grab from <!DOCTYPE html> to </html>, discarding any preamble
+  const docMatch = raw.match(/<!doctype\s+html[\s\S]*<\/html>/i)
+  let html = docMatch ? docMatch[0] : raw
 
   if (photoBase64) {
     html = html.replace(
@@ -197,11 +200,10 @@ Requirements:
     messages: [{ role: 'user', content: prompt }],
   })
 
-  return message.content[0].text
-    .replace(/^```html\s*/i, '')
-    .replace(/^```\s*/i, '')
-    .replace(/\s*```\s*$/, '')
-    .trim()
+  const raw2 = message.content[0].text.trim()
+    .replace(/^```[\w]*\s*/i, '').replace(/\s*```\s*$/i, '').trim()
+  const docMatch2 = raw2.match(/<!doctype\s+html[\s\S]*<\/html>/i)
+  return docMatch2 ? docMatch2[0] : raw2
 }
 
 // ── Support chat ──────────────────────────────────────────────────────────────
