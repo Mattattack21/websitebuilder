@@ -1,0 +1,353 @@
+/* ── Overlay & scroll container ──────────────────────────── */
+.fs-overlay {
+  position: fixed;
+  inset: 0;
+  background: #f1f5f9;
+  z-index: 100;
+  overflow-y: auto;
+}
+
+.fs-scroll {
+  min-height: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 32px 16px 64px;
+}
+
+/* ── Card ─────────────────────────────────────────────────── */
+.fs-card {
+  width: 100%;
+  max-width: 560px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 8px 48px rgba(0, 0, 0, 0.08);
+  padding: 40px 40px 48px;
+}
+
+/* ── Brand ────────────────────────────────────────────────── */
+.fs-brand {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.fs-logo {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: #0f172a;
+}
+
+.fs-logo-dot {
+  color: #3b82f6;
+}
+
+/* ── Header ───────────────────────────────────────────────── */
+.fs-header {
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.fs-header h1 {
+  font-size: 26px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 10px;
+  line-height: 1.25;
+}
+
+.fs-header p {
+  font-size: 15px;
+  color: #64748b;
+  margin: 0;
+}
+
+/* ── Form & fields ────────────────────────────────────────── */
+.fs-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.fs-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fs-field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fs-req {
+  color: #ef4444;
+  font-size: 13px;
+}
+
+.fs-opt {
+  font-size: 11px;
+  font-weight: 400;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.fs-hint {
+  font-size: 12px;
+  color: #94a3b8;
+  margin: -2px 0 2px;
+}
+
+.fs-field input {
+  height: 44px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0 14px;
+  font-size: 14px;
+  color: #0f172a;
+  background: #fff;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.fs-field input::placeholder {
+  color: #cbd5e1;
+}
+
+.fs-field input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+/* ── Side-by-side row ─────────────────────────────────────── */
+.fs-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* ── Photo upload zone ────────────────────────────────────── */
+.fs-photo-zone {
+  border: 2px dashed #e2e8f0;
+  border-radius: 12px;
+  padding: 28px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  position: relative;
+  overflow: hidden;
+  min-height: 120px;
+}
+
+.fs-photo-zone:hover {
+  border-color: #3b82f6;
+  background: #f8faff;
+}
+
+.fs-photo-zone:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+.fs-photo-zone--filled {
+  padding: 0;
+  border-style: solid;
+  border-color: #e2e8f0;
+}
+
+.fs-photo-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.fs-photo-icon {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.fs-photo-empty p {
+  font-size: 14px;
+  color: #475569;
+  margin: 0;
+  font-weight: 500;
+}
+
+.fs-photo-types {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.fs-photo-img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  display: block;
+  border-radius: 10px;
+}
+
+.fs-photo-change-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity 0.15s;
+  border-radius: 10px;
+}
+
+.fs-photo-zone--filled:hover .fs-photo-change-overlay {
+  opacity: 1;
+}
+
+.fs-file-hidden {
+  display: none;
+}
+
+/* ── Error ────────────────────────────────────────────────── */
+.fs-error {
+  font-size: 13px;
+  color: #ef4444;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 0;
+}
+
+/* ── CTA button ───────────────────────────────────────────── */
+.fs-cta {
+  height: 52px;
+  background: #0f172a;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  margin-top: 4px;
+}
+
+.fs-cta:hover:not(:disabled) {
+  background: #1e293b;
+  transform: translateY(-1px);
+}
+
+.fs-cta:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.fs-cta:disabled {
+  background: #cbd5e1;
+  cursor: not-allowed;
+}
+
+/* ── Skip link ────────────────────────────────────────────── */
+.fs-skip {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 13px;
+  cursor: pointer;
+  text-align: center;
+  padding: 4px;
+  transition: color 0.15s;
+}
+
+.fs-skip:hover {
+  color: #64748b;
+}
+
+/* ── Loading screen ───────────────────────────────────────── */
+.fs-loading-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  text-align: center;
+  padding: 40px 24px;
+}
+
+.fs-loading-sparkle {
+  font-size: 52px;
+  margin-bottom: 20px;
+  animation: fs-pulse 1.8s ease-in-out infinite;
+}
+
+.fs-loading-wrap h2 {
+  font-size: 24px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 10px;
+}
+
+.fs-loading-wrap p {
+  font-size: 15px;
+  color: #64748b;
+  margin: 0 0 32px;
+  max-width: 320px;
+}
+
+/* ── Animated dots ────────────────────────────────────────── */
+.fs-dots {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.fs-dots span {
+  width: 10px;
+  height: 10px;
+  background: #3b82f6;
+  border-radius: 50%;
+  animation: fs-bounce 1.2s ease-in-out infinite;
+}
+
+.fs-dots span:nth-child(2) { animation-delay: 0.2s; }
+.fs-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes fs-bounce {
+  0%, 80%, 100% { transform: scale(0.7); opacity: 0.5; }
+  40%           { transform: scale(1);   opacity: 1;   }
+}
+
+@keyframes fs-pulse {
+  0%, 100% { transform: scale(1);    }
+  50%      { transform: scale(1.08); }
+}
+
+/* ── Mobile ───────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .fs-card {
+    padding: 28px 20px 36px;
+    border-radius: 16px;
+  }
+
+  .fs-header h1 {
+    font-size: 22px;
+  }
+
+  .fs-row {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
