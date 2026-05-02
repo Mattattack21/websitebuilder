@@ -18,10 +18,12 @@ export const handler = async (event) => {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
     const { userId, email } = JSON.parse(event.body)
 
+    const priceId = 'price_1TSSH6Cvd4504F05RORrDd6p'
+
     const session = await stripe.checkout.sessions.create({
       line_items: [
         {
-          price: process.env.STRIPE_PRICE_ID,
+          price: priceId,
           quantity: 1,
         },
       ],
