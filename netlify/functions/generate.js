@@ -11,43 +11,48 @@ const THEME_GUIDES = {
   trustworthy: {
     label: 'Trustworthy',
     css: `
-Color palette: primary #1e3a5f (navy), accent #2563eb (blue), background #ffffff, text #1e293b, headings #0f172a.
-Font: system-ui, -apple-system, sans-serif. Clean, readable, and professional.
-Style: generous whitespace, subtle #e2e8f0 borders, soft box-shadows (0 2px 8px rgba(0,0,0,0.08)), rounded corners 8px.
-Tone: professional and reassuring. Use words like "trusted", "reliable", "certified", "expert", "professional".`,
+COLORS: background #ffffff, primary navy #1B3A6B, accent blue #2563eb, text #1e293b, headings #0f172a, section-bg #f8fafc.
+FONTS: Georgia, 'Times New Roman', serif for headings (bold, authoritative); system-ui for body text.
+STYLE: Clean professional layout. Large hero with business name in bold serif. Subtle box-shadows (0 4px 16px rgba(0,0,0,0.08)). Rounded corners 8px. Grid layout for service cards. Generous whitespace. Navy CTA buttons that turn slightly lighter on hover.
+TRUST BADGES: Include a "Why Choose Us" row with 3 badges: "✓ Licensed & Insured", "⭐ 5-Star Rated", "💰 Free Estimates" — styled as pill badges in navy with white text.
+HERO: Deep navy gradient background (linear-gradient(135deg, #1B3A6B 0%, #2563eb 100%)), white headline text, white subheadline, two white-outlined CTA buttons.
+TONE: Professional and reassuring. Words like "trusted", "reliable", "certified", "expert", "professional".`,
   },
   bold: {
     label: 'Bold',
     css: `
-Color palette: background #0a0a0a, primary #ef4444 (red), accent #ffffff, text #f5f5f5, headings #ffffff.
-Font: system-ui with heavy weights (800–900) for headings; clean sans-serif for body.
-Style: high contrast, large impactful typography, red CTA buttons, minimal decoration, strong borders on cards.
-Tone: confident and direct. Use words like "results", "powerful", "fast", "dominate", "get it done now".`,
+COLORS: background #000000 (pure black), primary red #FF0000, accent white #ffffff, text #f5f5f5, headings #ffffff, card-bg #111111.
+FONTS: system-ui with weight 900 for headings (massive, full-width). Clean sans-serif body.
+STYLE: Full-width sections edge to edge. Giant typography — hero headline font-size min 64px. Pure black background throughout. Red CTA buttons with white text. Cards with 1px red border. Minimal decoration, maximum impact. Hover effects that turn red.
+HERO: Black background, giant white headline taking up most of the hero, red accent line under it, bold red CTA button.
+TONE: Aggressive and confident. Words like "dominate", "results", "powerful", "get it done", "no excuses".`,
   },
   warm: {
     label: 'Cute & Warm',
     css: `
-Color palette: primary #ec4899 (pink), accent #f9a8d4 (light pink), background #fff0f6 (soft cream/pink), text #831843 (dark pink), headings #500724.
-Font: system-ui; rounded corners (16–24px) everywhere — buttons, cards, inputs.
-Style: soft pastel shadows, playful rounded shapes, heart or star emoji accents, friendly feel.
-Tone: warm and personal. Use words like "friendly", "caring", "personal", "we love what we do", "here for you".`,
+COLORS: background #FFFDD0 (cream), primary pink #FFB6C1, accent #FF69B4 (hot pink), text #5c2d3a, headings #3d1a24, card-bg #fff0f3.
+FONTS: system-ui with slightly rounded feel; body font-size 16px; warm friendly sizes.
+STYLE: Rounded corners 20px on EVERYTHING — buttons, cards, inputs, sections. Soft pink box-shadows. Decorative heart (♥) and flower (✿) CSS elements in section headers. Pastel service cards with pink gradient backgrounds. Inputs with thick pink border on focus.
+HERO: Soft pink-to-cream gradient (linear-gradient(135deg, #FFB6C1 0%, #FFFDD0 100%)), warm headline, decorative hearts.
+TONE: Warm and personal. Words like "we love what we do", "caring", "friendly", "here for you", "our family serving yours".`,
   },
   exciting: {
     label: 'Exciting',
     css: `
-Color palette: primary #f97316 (orange), accent #facc15 (yellow), background #fff7ed, text #431407, headings #9a3412.
-Hero background: use a bold linear-gradient(135deg, #f97316 0%, #facc15 100%).
-Font: system-ui, bold weights 700–900. Dynamic, energetic layout.
-Style: vibrant gradient sections, rounded cards, bold CTAs with gradient backgrounds, emoji accents.
-Tone: enthusiastic and fun. Use words like "amazing", "exciting", "let's go", "we can't wait to help you".`,
+COLORS: primary orange #FF6B35, accent yellow #FFE134, background #fff8f0, text #1a0a00, headings #cc3d00, card-bg #ffffff.
+FONTS: system-ui weight 800-900 for headings. Bold and energetic throughout.
+STYLE: Vibrant animated gradient hero using CSS @keyframes (animate the background-position of a orange-to-yellow gradient). Rounded cards with orange-to-yellow gradient border. Bold CTAs with gradient background. Section dividers as diagonal CSS shapes using clip-path. High energy layout.
+HERO: Animated gradient (keyframes shifting orange→yellow→orange), large white headline, bright yellow CTA button with orange text.
+TONE: Enthusiastic. Words like "amazing", "let's go", "we bring the energy", "get started today", "you deserve the best".`,
   },
   elegant: {
     label: 'Elegant',
     css: `
-Color palette: background #0c0c0c, primary #d4af37 (gold), accent #f5e6a3 (light gold), text #e5e0d8, headings #ffffff.
-Font: Georgia, 'Times New Roman', serif for headings; system-ui for body.
-Style: fine 1px gold borders, generous padding, luxury feel, uppercase letter-spacing (2–3px) on section labels.
-Tone: refined and exclusive. Use words like "premium", "bespoke", "distinguished", "artisan", "curated".`,
+COLORS: background #1A1A1A (deep black), primary gold #C9A84C, accent #e8d5a3 (light gold), text #d4c9b8, headings #ffffff, section-bg #141414.
+FONTS: Georgia, 'Times New Roman', serif for ALL headings. system-ui for body. Letter-spacing 2-3px on section labels (uppercase).
+STYLE: Fine 1px gold borders on cards and sections. Generous padding (80px+ sections). Thin gold horizontal rules as dividers. Subtle gold box-shadow on cards. Uppercase section labels with wide letter-spacing. Hover effects that glow gold.
+HERO: Near-black background with a very subtle gold radial gradient glow, large white serif headline, gold CTA button.
+TONE: Refined and exclusive. Words like "premier", "bespoke", "distinguished", "artisan", "curated", "where excellence meets craft".`,
   },
 }
 
@@ -121,32 +126,55 @@ async function handleGenerateWebsite({
     instagram     ? `- Instagram: ${instagram}`                : null,
   ].filter(Boolean).join('\n')
 
-  const prompt = `Build a complete single-page business website as raw HTML with all CSS in a <style> tag. No external files, CDNs, or frameworks.
+  const prompt = `You are a professional web designer at a top creative agency. Create a stunning, modern, beautifully designed business website. This must look like it was crafted by a professional agency — not a generic template. Use creative CSS including gradients, box-shadows, hover effects, and animations to make it visually impressive.
 
-BUSINESS:
-- Name: ${businessName} | Type: ${businessType} | Location: ${city}, ${state}
-${businessDescription ? `- About: ${businessDescription}` : ''}
-${contactBlock}
-
-THEME — "${theme.label}":
+BUSINESS DETAILS:
+- Name: ${businessName}
+- Type: ${businessType}
+- Location: ${city}, ${state}${businessDescription ? `\n- About: ${businessDescription}` : ''}
+${contactBlock || ''}
+DESIGN THEME — "${theme.label}":
 ${theme.css}
 
-SECTIONS (in order):
-1. STICKY NAV — name left, click-to-call phone right.
-2. HERO — headline with business name, tagline, CTA button, "📞 Call Us Today" button linking tel:${telDigits}.
-3. ABOUT — 2 sentences of trust-building copy for this business.
-4. SERVICES — 3 cards with emoji icon, title, 1-sentence description realistic for a ${businessType}.
-5. CONTACT FORM — form id="contact-form", fields: name="name", name="phone", name="email", name="message", submit button.${businessHours ? ` Hours: ${businessHours}.` : ''}${address ? ` Address: ${address}.` : ''}
-6. FOOTER — name, phone, email, address, socials, copyright.
-7. FIXED MOBILE BAR — sticky "📞 Call Us Now" at bottom, tel:${telDigits}.${photoBase64 ? `\n8. PHOTO — place provided photo in hero/about, src="__BUSINESS_PHOTO__".` : ''}
+REQUIRED SECTIONS — ALL MUST BE PRESENT, NO EXCEPTIONS:
+
+1. STICKY NAV: Business name/logo on left. Phone as click-to-call (tel:${telDigits}) on right. Background matches theme. Stays fixed at top on scroll. Subtle drop-shadow when scrolling (use JS scroll listener to add class).
+
+2. HERO (full-width, min-height 85vh): Theme-specific background (gradient or dark). Large bold headline featuring the business name. Compelling subheadline/tagline written for this specific business. Two CTA buttons side by side: primary "Get a Free Quote" and secondary "📞 Call Now" linking tel:${telDigits}. Visually stunning — this is the first thing visitors see.
+
+3. ABOUT US: 2–3 sentences of warm, specific copy written for ${businessName} in ${city}, ${state}. Include a decorative element (CSS shape, colored accent bar, or icon) that matches the theme. Make it personal and trust-building.
+
+4. SERVICES (grid layout): Exactly 3 service cards. Each card has: a large emoji icon, a bold service name, and a 1-2 sentence description. Services must be realistic for a ${businessType} business. Cards have hover effects (lift + shadow on hover). Use CSS grid, 3 columns on desktop, 1 on mobile.
+
+5. LEAD CAPTURE FORM — THIS SECTION IS MANDATORY AND MUST ALWAYS BE INCLUDED:
+   - Section heading like "Get a Free Quote" or "Contact Us Today"
+   - The form element MUST have: id="contact-form"
+   - Field with name="name" (text input, placeholder "Your Name")
+   - Field with name="phone" (tel input, placeholder "Your Phone Number")
+   - Field with name="email" (email input, placeholder "Your Email")
+   - Field with name="message" (textarea, placeholder "Tell us about your project...")
+   - Submit button styled prominently in the theme's primary color
+   - Form styled to match the theme with proper focus states${businessHours ? `\n   - Show business hours: ${businessHours}` : ''}${address ? `\n   - Show address: ${address}` : ''}
+
+6. FOOTER: Business name, phone (click-to-call), email, address, hours if provided, social links if provided. Copyright line "© ${new Date().getFullYear()} ${businessName}. All rights reserved." Styled to match the theme.
+
+7. STICKY CALL BUTTON: A fixed button in the bottom-right corner (position: fixed, bottom: 24px, right: 24px, z-index: 9999). Shows "📞 Call Now" and links to tel:${telDigits}. Styled as a round or pill button in the theme's primary CTA color. Visible on all screen sizes.${photoBase64 ? `\n\n8. BUSINESS PHOTO: Display the provided photo in the hero or about section. Use src="__BUSINESS_PHOTO__" exactly. Style naturally within the design.` : ''}
+
+CSS REQUIREMENTS — MAKE IT BEAUTIFUL:
+- Use CSS gradients on hero section and CTA buttons
+- Box-shadows on cards and nav (not heavy — tasteful)
+- Smooth hover transitions (0.2s ease) on all interactive elements
+- CSS animations: at minimum the hero text should fade/slide in on load (@keyframes)
+- Mobile-first: perfect at 375px, beautiful at 1200px+. Use @media (min-width: 768px) breakpoints.
+- Inputs and textarea: styled with border, padding 12px 16px, border-radius matching theme, focus state with colored outline
 
 OUTPUT FORMAT — CRITICAL:
 - Your response MUST start with exactly: <!DOCTYPE html>
 - Your response MUST end with exactly: </html>
 - Do NOT write anything before <!DOCTYPE html> or after </html>
-- Do NOT use markdown, code fences, backticks, or any explanation text
-- ALL CSS must be inside a single <style> tag in <head> — no external stylesheets or CDN links
-- Mobile-first responsive design, looks great at 375px wide`
+- Do NOT use markdown, code fences, backticks, or any explanation text whatsoever
+- ALL CSS inside a single <style> tag in <head> — zero external stylesheets or CDN links
+- All JavaScript inline in a <script> tag before </body>`
 
   const messageContent = [{ type: 'text', text: prompt }]
   if (photoBase64) {
@@ -158,7 +186,7 @@ OUTPUT FORMAT — CRITICAL:
 
   const message = await client.messages.create({
     model: 'claude-opus-4-7',
-    max_tokens: 3000,
+    max_tokens: 4500,
     messages: [{ role: 'user', content: messageContent }],
   })
 
