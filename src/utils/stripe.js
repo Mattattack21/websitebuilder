@@ -1,22 +1,15 @@
-import { loadStripe } from '@stripe/stripe-js'
-
-let stripePromise = null
-
-function getStripe() {
-  if (!stripePromise) {
-    stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
-  }
-  return stripePromise
-}
-
-export async function redirectToCheckout(userId) {
-  const stripe = await getStripe()
-  const { error } = await stripe.redirectToCheckout({
-    lineItems: [{ price: import.meta.env.VITE_STRIPE_PRICE_ID, quantity: 1 }],
-    mode: 'subscription',
-    successUrl: `${window.location.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancelUrl: `${window.location.origin}/pricing`,
-    clientReferenceId: userId ?? undefined,
+export async function redirectToCheckout(userId, email) {
+  const res = await fetch('/.netlify/functions/create-checkout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId, email }),
   })
-  if (error) throw error
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}))
+    throw new Error(data.error ?? 'Failed to create checkout session')
+  }
+
+  const { url } = await res.json()
+  window.location.href = url
 }

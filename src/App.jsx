@@ -119,7 +119,7 @@ export default function App() {
   async function handleCheckout() {
     setCheckoutLoading(true)
     try {
-      await redirectToCheckout(user?.id)
+      await redirectToCheckout(user?.id, user?.email)
     } catch (err) {
       console.error('Checkout error:', err)
       setCheckoutLoading(false)
