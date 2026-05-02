@@ -81,10 +81,15 @@ export const handler = async (event) => {
     return { statusCode: 400, body: JSON.stringify({ error: 'Unknown type' }) }
   } catch (err) {
     console.error('generate function error:', err)
+    const isTimeout = err.code === 'ECONNRESET' || err.message?.includes('timeout') || err.status === 529
     return {
-      statusCode: 500,
+      statusCode: isTimeout ? 504 : 500,
       headers: { ...CORS, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ error: err.message ?? 'Internal server error' }),
+      body: JSON.stringify({
+        error: isTimeout
+          ? 'Generation timed out. Please try again — it usually works on the second attempt.'
+          : (err.message ?? 'Internal server error'),
+      }),
     }
   }
 }
@@ -116,35 +121,30 @@ async function handleGenerateWebsite({
     instagram     ? `- Instagram: ${instagram}`                : null,
   ].filter(Boolean).join('\n')
 
-  const prompt = `You are an expert web designer. Build a complete, polished, single-page business website as raw HTML with ALL CSS embedded in a <style> tag. No external files, no CDN links, no frameworks.
+  const prompt = `Build a complete single-page business website as raw HTML with all CSS in a <style> tag. No external files, CDNs, or frameworks.
 
-BUSINESS INFORMATION:
-- Name: ${businessName}
-- Type: ${businessType}
-- Location: ${city}, ${state}
+BUSINESS:
+- Name: ${businessName} | Type: ${businessType} | Location: ${city}, ${state}
 ${businessDescription ? `- About: ${businessDescription}` : ''}
 ${contactBlock}
 
-DESIGN THEME — "${theme.label}":
+THEME — "${theme.label}":
 ${theme.css}
 
-REQUIRED SECTIONS (in this exact order):
-1. STICKY NAV — business name/logo left; phone number as click-to-call link right (if provided).
-2. HERO — bold headline with the business name, a compelling AI-written tagline, a primary CTA button ("Get a Free Quote" or similar), and a prominent "📞 Call Us Today" click-to-call button linking to tel:${telDigits}.
-3. ABOUT US — 2–3 sentences of warm, trust-building copy tailored to this specific business.
-4. SERVICES — exactly 3–4 service cards, each with a relevant emoji icon, a title, and a 1-sentence description. Choose services realistic for a ${businessType}.
-5. CONTACT & INFO — lead capture form. The form element MUST have id="contact-form". Each field MUST use these exact name attributes: name="name" (text input), name="phone" (tel input), name="email" (email input), name="message" (textarea). Include a submit button.${businessHours ? ` Show hours: ${businessHours}.` : ''}${address ? ` Show address: ${address}.` : ''}
-6. FOOTER — business name, phone, email (if provided), address (if provided), social links (if provided), copyright line.
-7. FIXED BOTTOM BAR — a sticky "📞 Call Us Now" bar always visible at the bottom of the screen on mobile, linking to tel:${telDigits}.${photoBase64 ? `\n8. BUSINESS PHOTO — add the provided photo in the hero or about section using exactly src="__BUSINESS_PHOTO__", styled naturally within the design.` : ''}
+SECTIONS (in order):
+1. STICKY NAV — name left, click-to-call phone right.
+2. HERO — headline with business name, tagline, CTA button, "📞 Call Us Today" button linking tel:${telDigits}.
+3. ABOUT — 2 sentences of trust-building copy for this business.
+4. SERVICES — 3 cards with emoji icon, title, 1-sentence description realistic for a ${businessType}.
+5. CONTACT FORM — form id="contact-form", fields: name="name", name="phone", name="email", name="message", submit button.${businessHours ? ` Hours: ${businessHours}.` : ''}${address ? ` Address: ${address}.` : ''}
+6. FOOTER — name, phone, email, address, socials, copyright.
+7. FIXED MOBILE BAR — sticky "📞 Call Us Now" at bottom, tel:${telDigits}.${photoBase64 ? `\n8. PHOTO — place provided photo in hero/about, src="__BUSINESS_PHOTO__".` : ''}
 
-TECHNICAL RULES:
-1. Output ONLY the raw HTML — no markdown, no \`\`\` fences, no commentary before or after.
-2. ALL CSS must be inside a single <style> tag in <head>. Zero external stylesheets or CDN links.
-3. No external JavaScript libraries (jQuery, frameworks). Minimal vanilla JS only for UI interactions like a mobile nav toggle.
-4. Mobile-first responsive design. Must look great at 375px wide. Use media queries for desktop.
-5. Start the output with <!DOCTYPE html> and end with </html>. Nothing outside the HTML document.
-6. The design must look polished and intentional — apply the theme deeply through colors, typography, spacing, and copy. Not a generic template.
-7. Write compelling, realistic copy tailored to this business's name, type, and location.`
+RULES:
+- Output ONLY raw HTML. Start with <!DOCTYPE html>, end with </html>. No markdown or fences.
+- All CSS in one <style> tag. No external resources.
+- Mobile-first, looks great at 375px. Desktop media queries.
+- Apply theme deeply — colors, type, spacing. Write realistic copy for this specific business.`
 
   const messageContent = [{ type: 'text', text: prompt }]
   if (photoBase64) {
@@ -156,7 +156,7 @@ TECHNICAL RULES:
 
   const message = await client.messages.create({
     model: 'claude-opus-4-7',
-    max_tokens: 8192,
+    max_tokens: 3000,
     messages: [{ role: 'user', content: messageContent }],
   })
 
