@@ -26,8 +26,8 @@ export const handler = async (event) => {
         },
       ],
       mode: 'subscription',
-      success_url: 'https://siteforge.netlify.app/success?session_id={CHECKOUT_SESSION_ID}',
-      cancel_url: 'https://siteforge.netlify.app/pricing',
+      success_url: 'https://lovely-sunshine-0e5bd7.netlify.app/success?session_id={CHECKOUT_SESSION_ID}',
+      cancel_url: 'https://lovely-sunshine-0e5bd7.netlify.app/pricing',
       ...(userId && { client_reference_id: userId }),
       ...(email  && { customer_email: email }),
     })
