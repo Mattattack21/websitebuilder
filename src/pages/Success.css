@@ -9,6 +9,22 @@
   padding: 24px;
 }
 
+/* ── Branded loading splash ──────────────────────────────────────────────── */
+.success-init-logo {
+  font-size: 26px;
+  font-weight: 800;
+  color: #1e1b4b;
+  letter-spacing: -0.5px;
+  animation: success-pulse 1.4s ease-in-out infinite;
+}
+.success-init-logo span { color: #7c3aed; }
+
+@keyframes success-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.35; }
+}
+
+/* ── Card ────────────────────────────────────────────────────────────────── */
 .success-card {
   position: relative;
   z-index: 1;
@@ -16,50 +32,111 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  max-width: 480px;
+  max-width: 440px;
   width: 100%;
 }
 
+/* ── Logo ────────────────────────────────────────────────────────────────── */
+.success-brand {
+  font-size: 20px;
+  font-weight: 800;
+  color: #1e1b4b;
+  letter-spacing: -0.5px;
+  margin-bottom: 28px;
+}
+.success-brand-dot { color: #7c3aed; }
+
+/* ── Checkmark ───────────────────────────────────────────────────────────── */
 .success-checkmark {
-  width: 72px;
-  height: 72px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   background: linear-gradient(135deg, #7c3aed, #a78bfa);
   color: #fff;
-  font-size: 36px;
+  font-size: 30px;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 28px;
+  margin-bottom: 20px;
   box-shadow: 0 8px 32px rgba(124, 58, 237, 0.35);
 }
 
+/* ── Headline ────────────────────────────────────────────────────────────── */
 .success-card h1 {
-  font-size: clamp(28px, 5vw, 42px);
+  font-size: clamp(24px, 5vw, 36px);
   font-weight: 800;
   color: #1e1b4b;
   letter-spacing: -1.5px;
   line-height: 1.15;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .success-sub {
-  font-size: 17px;
+  font-size: 15px;
   color: #6b7280;
   line-height: 1.6;
-  margin-bottom: 36px;
+  margin-bottom: 28px;
+  max-width: 360px;
 }
 
+/* ── Form ────────────────────────────────────────────────────────────────── */
+.success-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.success-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  text-align: left;
+}
+
+.success-field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.success-field input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 15px;
+  font-family: inherit;
+  color: #1e1b4b;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.success-field input:focus {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.success-error {
+  font-size: 13px;
+  color: #ef4444;
+  text-align: center;
+  margin: -2px 0;
+}
+
+/* ── Submit button ───────────────────────────────────────────────────────── */
 .success-btn {
-  display: inline-flex;
+  width: 100%;
+  display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
   background: #7c3aed;
   color: #fff;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
-  padding: 15px 32px;
+  padding: 13px 24px;
   border-radius: 12px;
   border: none;
   cursor: pointer;
@@ -67,7 +144,7 @@
   letter-spacing: -0.2px;
   box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
   transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
-  margin-bottom: 16px;
+  margin-top: 4px;
 }
 .success-btn:hover:not(:disabled) {
   background: #6d28d9;
@@ -79,11 +156,33 @@
   cursor: default;
 }
 
+/* ── Mode toggle ─────────────────────────────────────────────────────────── */
+.success-toggle {
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 12px;
+}
+.success-toggle button {
+  background: none;
+  border: none;
+  color: #7c3aed;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+}
+.success-toggle button:hover {
+  text-decoration: underline;
+}
+
+/* ── Footer note ─────────────────────────────────────────────────────────── */
 .success-note {
   font-size: 12px;
   color: #c4b5fd;
 }
 
+/* ── Ambient glows ───────────────────────────────────────────────────────── */
 .success-glow {
   position: absolute;
   border-radius: 50%;
