@@ -651,6 +651,11 @@
   display: block;
 }
 
+/* ── Generation retry message ───────────────────── */
+.ob-gen-retry {
+  color: #f59e0b;
+}
+
 /* ── Generation error ────────────────────────────── */
 .ob-gen-error {
   color: #ef4444;

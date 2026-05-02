@@ -126,55 +126,27 @@ async function handleGenerateWebsite({
     instagram     ? `- Instagram: ${instagram}`                : null,
   ].filter(Boolean).join('\n')
 
-  const prompt = `You are a professional web designer at a top creative agency. Create a stunning, modern, beautifully designed business website. This must look like it was crafted by a professional agency — not a generic template. Use creative CSS including gradients, box-shadows, hover effects, and animations to make it visually impressive.
+  const prompt = `You are a professional web designer. Build a stunning single-page business website as a complete HTML document.
 
-BUSINESS DETAILS:
-- Name: ${businessName}
-- Type: ${businessType}
-- Location: ${city}, ${state}${businessDescription ? `\n- About: ${businessDescription}` : ''}
+BUSINESS: ${businessName} | ${businessType} | ${city}, ${state}${businessDescription ? ` | ${businessDescription}` : ''}
 ${contactBlock || ''}
-DESIGN THEME — "${theme.label}":
-${theme.css}
+THEME — "${theme.label}": ${theme.css}
 
-REQUIRED SECTIONS — ALL MUST BE PRESENT, NO EXCEPTIONS:
+REQUIRED SECTIONS (all mandatory, in this order):
+1. STICKY NAV: Name left, phone click-to-call (tel:${telDigits}) right. Fixed top. Theme background.
+2. HERO (min-height 80vh): Theme gradient background. Bold headline with business name. Tagline. Two buttons: "Get a Free Quote" + "📞 Call Now" (tel:${telDigits}).
+3. ABOUT: 2 sentences of specific copy for ${businessName} in ${city}. Decorative accent element.
+4. SERVICES: 3 cards in a CSS grid (3-col desktop, 1-col mobile). Each: emoji icon, service name, 1-sentence description. Hover lift effect.
+5. CONTACT FORM (MANDATORY — NEVER OMIT): Heading "Get a Free Quote". Form with id="contact-form". Fields: name="name" (text), name="phone" (tel), name="email" (email), name="message" (textarea). Styled submit button.${businessHours ? ` Hours: ${businessHours}.` : ''}${address ? ` Address: ${address}.` : ''}
+6. FOOTER: Name, phone, email, address, socials, copyright "© ${new Date().getFullYear()} ${businessName}".
+7. FIXED CALL BUTTON: position:fixed, bottom:24px, right:24px, z-index:9999. "📞 Call Now" → tel:${telDigits}.${photoBase64 ? `\n8. PHOTO: Show provided image in hero/about using src="__BUSINESS_PHOTO__".` : ''}
 
-1. STICKY NAV: Business name/logo on left. Phone as click-to-call (tel:${telDigits}) on right. Background matches theme. Stays fixed at top on scroll. Subtle drop-shadow when scrolling (use JS scroll listener to add class).
+CSS: Gradients on hero + buttons. Box-shadows on cards. Hover transitions (0.2s). Hero fade-in @keyframes. Mobile-first, @media(min-width:768px) for desktop. Styled inputs with focus states.
 
-2. HERO (full-width, min-height 85vh): Theme-specific background (gradient or dark). Large bold headline featuring the business name. Compelling subheadline/tagline written for this specific business. Two CTA buttons side by side: primary "Get a Free Quote" and secondary "📞 Call Now" linking tel:${telDigits}. Visually stunning — this is the first thing visitors see.
-
-3. ABOUT US: 2–3 sentences of warm, specific copy written for ${businessName} in ${city}, ${state}. Include a decorative element (CSS shape, colored accent bar, or icon) that matches the theme. Make it personal and trust-building.
-
-4. SERVICES (grid layout): Exactly 3 service cards. Each card has: a large emoji icon, a bold service name, and a 1-2 sentence description. Services must be realistic for a ${businessType} business. Cards have hover effects (lift + shadow on hover). Use CSS grid, 3 columns on desktop, 1 on mobile.
-
-5. LEAD CAPTURE FORM — THIS SECTION IS MANDATORY AND MUST ALWAYS BE INCLUDED:
-   - Section heading like "Get a Free Quote" or "Contact Us Today"
-   - The form element MUST have: id="contact-form"
-   - Field with name="name" (text input, placeholder "Your Name")
-   - Field with name="phone" (tel input, placeholder "Your Phone Number")
-   - Field with name="email" (email input, placeholder "Your Email")
-   - Field with name="message" (textarea, placeholder "Tell us about your project...")
-   - Submit button styled prominently in the theme's primary color
-   - Form styled to match the theme with proper focus states${businessHours ? `\n   - Show business hours: ${businessHours}` : ''}${address ? `\n   - Show address: ${address}` : ''}
-
-6. FOOTER: Business name, phone (click-to-call), email, address, hours if provided, social links if provided. Copyright line "© ${new Date().getFullYear()} ${businessName}. All rights reserved." Styled to match the theme.
-
-7. STICKY CALL BUTTON: A fixed button in the bottom-right corner (position: fixed, bottom: 24px, right: 24px, z-index: 9999). Shows "📞 Call Now" and links to tel:${telDigits}. Styled as a round or pill button in the theme's primary CTA color. Visible on all screen sizes.${photoBase64 ? `\n\n8. BUSINESS PHOTO: Display the provided photo in the hero or about section. Use src="__BUSINESS_PHOTO__" exactly. Style naturally within the design.` : ''}
-
-CSS REQUIREMENTS — MAKE IT BEAUTIFUL:
-- Use CSS gradients on hero section and CTA buttons
-- Box-shadows on cards and nav (not heavy — tasteful)
-- Smooth hover transitions (0.2s ease) on all interactive elements
-- CSS animations: at minimum the hero text should fade/slide in on load (@keyframes)
-- Mobile-first: perfect at 375px, beautiful at 1200px+. Use @media (min-width: 768px) breakpoints.
-- Inputs and textarea: styled with border, padding 12px 16px, border-radius matching theme, focus state with colored outline
-
-OUTPUT FORMAT — CRITICAL:
-- Your response MUST start with exactly: <!DOCTYPE html>
-- Your response MUST end with exactly: </html>
-- Do NOT write anything before <!DOCTYPE html> or after </html>
-- Do NOT use markdown, code fences, backticks, or any explanation text whatsoever
-- ALL CSS inside a single <style> tag in <head> — zero external stylesheets or CDN links
-- All JavaScript inline in a <script> tag before </body>`
+OUTPUT RULES — CRITICAL:
+- Start with <!DOCTYPE html>, end with </html>. Nothing before or after.
+- No markdown, no code fences, no explanation text.
+- All CSS in one <style> tag in <head>. No external resources.`
 
   const messageContent = [{ type: 'text', text: prompt }]
   if (photoBase64) {
@@ -186,7 +158,7 @@ OUTPUT FORMAT — CRITICAL:
 
   const message = await client.messages.create({
     model: 'claude-opus-4-7',
-    max_tokens: 4500,
+    max_tokens: 2500,
     messages: [{ role: 'user', content: messageContent }],
   })
 

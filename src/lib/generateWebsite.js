@@ -87,20 +87,33 @@ async function callGenerate(payload) {
 }
 
 // ── Full website generation ───────────────────────────────────────────────────
-export async function generateWebsite(params, user, onProgress) {
+export async function generateWebsite(params, user, onProgress, onRetry) {
   onProgress?.(5)
 
-  // Animate progress while the server works (typically 15–25 s)
   let fakeProgress = 5
   const ticker = setInterval(() => {
-    fakeProgress = Math.min(fakeProgress + 2, 82)
+    fakeProgress = Math.min(fakeProgress + 2, 60)
     onProgress?.(fakeProgress)
   }, 600)
 
-  try {
+  async function attempt() {
     const { html: rawHtml } = await callGenerate({ type: 'website', ...params })
+    return rawHtml
+  }
+
+  try {
+    let rawHtml
+    try {
+      rawHtml = await attempt()
+    } catch {
+      // Retry once — reset progress and notify the UI
+      onRetry?.()
+      fakeProgress = 5
+      onProgress?.(5)
+      rawHtml = await attempt()
+    }
+
     clearInterval(ticker)
-    onProgress?.(90)
 
     const html = injectLeadScript(rawHtml, user?.id ?? null)
 

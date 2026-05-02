@@ -44,6 +44,7 @@ export default function Onboarding({ onClose, onComplete, user }) {
   const [genMsgIdx, setGenMsgIdx]     = useState(0)
   const [generatedHtml, setGeneratedHtml] = useState(null)
   const [genError, setGenError]       = useState(null)
+  const [genRetryMsg, setGenRetryMsg] = useState(null)
   const [countdown, setCountdown]     = useState(14 * 60 + 59)
   const [checkoutLoading, setCheckoutLoading] = useState(false)
   const [checkoutError, setCheckoutError]     = useState(null)
@@ -60,6 +61,7 @@ export default function Onboarding({ onClose, onComplete, user }) {
     cancelledRef.current = false
     setGenProgress(0)
     setGenError(null)
+    setGenRetryMsg(null)
 
     generateWebsite(
       {
@@ -71,7 +73,8 @@ export default function Onboarding({ onClose, onComplete, user }) {
         businessDescription: form.about,
       },
       null, // No user — don't save to Supabase yet; persisted via localStorage before checkout
-      (pct) => { if (!cancelledRef.current) setGenProgress(pct) }
+      (pct) => { if (!cancelledRef.current) setGenProgress(pct) },
+      () => { if (!cancelledRef.current) setGenRetryMsg('Generation took too long, trying again…') }
     )
       .then(html => {
         if (cancelledRef.current) return
@@ -161,6 +164,8 @@ export default function Onboarding({ onClose, onComplete, user }) {
           <h2>Building your website...</h2>
           {genError ? (
             <p className="ob-gen-error">{genError}</p>
+          ) : genRetryMsg ? (
+            <p className="ob-gen-msg ob-gen-retry">{genRetryMsg}</p>
           ) : (
             <p className="ob-gen-msg">{GEN_MESSAGES[genMsgIdx]}</p>
           )}
