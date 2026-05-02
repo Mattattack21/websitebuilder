@@ -19,8 +19,13 @@ export const handler = async (event) => {
     const { userId, email } = JSON.parse(event.body)
 
     const session = await stripe.checkout.sessions.create({
+      line_items: [
+        {
+          price: process.env.STRIPE_PRICE_ID,
+          quantity: 1,
+        },
+      ],
       mode: 'subscription',
-      line_items: [{ price: process.env.STRIPE_PRICE_ID, quantity: 1 }],
       success_url: 'https://siteforge.netlify.app/success?session_id={CHECKOUT_SESSION_ID}',
       cancel_url: 'https://siteforge.netlify.app/pricing',
       ...(userId && { client_reference_id: userId }),
