@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import './Onboarding.css'
 import { generateWebsite } from '../lib/generateWebsite'
-import Auth from './Auth'
+import { redirectToCheckout } from '../utils/stripe'
 
 const VIBES = [
   { id: 'trustworthy', icon: '🛡️', name: 'Trustworthy', desc: 'Professional, reliable, and clean' },
@@ -36,15 +36,17 @@ const FEATURES = [
 
 const STEP_LABELS = ['Theme', 'Business']
 
-export default function Onboarding({ onClose, onComplete }) {
-  const [step, setStep] = useState(1)
-  const [vibe, setVibe] = useState(null)
-  const [form, setForm] = useState({ name: '', type: '', city: '', state: '', about: '' })
+export default function Onboarding({ onClose, onComplete, user }) {
+  const [step, setStep]               = useState(1)
+  const [vibe, setVibe]               = useState(null)
+  const [form, setForm]               = useState({ name: '', type: '', city: '', state: '', about: '' })
   const [genProgress, setGenProgress] = useState(0)
-  const [genMsgIdx, setGenMsgIdx] = useState(0)
+  const [genMsgIdx, setGenMsgIdx]     = useState(0)
   const [generatedHtml, setGeneratedHtml] = useState(null)
-  const [genError, setGenError] = useState(null)
-  const [countdown, setCountdown] = useState(14 * 60 + 59)
+  const [genError, setGenError]       = useState(null)
+  const [countdown, setCountdown]     = useState(14 * 60 + 59)
+  const [checkoutLoading, setCheckoutLoading] = useState(false)
+  const [checkoutError, setCheckoutError]     = useState(null)
   const cancelledRef = useRef(false)
 
   useEffect(() => {
@@ -61,14 +63,14 @@ export default function Onboarding({ onClose, onComplete }) {
 
     generateWebsite(
       {
-        themeVibe: vibe,
-        businessName: form.name,
-        businessType: form.type,
-        city: form.city,
-        state: form.state,
+        themeVibe:           vibe,
+        businessName:        form.name,
+        businessType:        form.type,
+        city:                form.city,
+        state:               form.state,
         businessDescription: form.about,
       },
-      null,
+      null, // No user — don't save to Supabase yet; persisted via localStorage before checkout
       (pct) => { if (!cancelledRef.current) setGenProgress(pct) }
     )
       .then(html => {
@@ -85,7 +87,7 @@ export default function Onboarding({ onClose, onComplete }) {
     return () => { cancelledRef.current = true }
   }, [step])
 
-  // Countdown timer — starts (or restarts) when pricing screen opens
+  // Countdown timer — starts when pricing screen opens
   useEffect(() => {
     if (step !== 5) return
     setCountdown(14 * 60 + 59)
@@ -99,10 +101,56 @@ export default function Onboarding({ onClose, onComplete }) {
   }, [])
 
   const formValid = form.name.trim() && form.type && form.city.trim() && form.state.trim()
-  const canNext = (step === 1 && vibe) || (step === 2 && formValid)
+  const canNext   = (step === 1 && vibe) || (step === 2 && formValid)
 
   const countdownMins = String(Math.floor(countdown / 60)).padStart(2, '0')
   const countdownSecs = String(countdown % 60).padStart(2, '0')
+
+  // ── Step 4: "Go live" handler ─────────────────────────────────────────────
+  // Authenticated users (theme change) skip pricing and apply directly.
+  // New users proceed to the pricing + Stripe checkout step.
+  function handleGoLive() {
+    if (user) {
+      onComplete(user, generatedHtml, {
+        themeVibe:           vibe,
+        businessName:        form.name,
+        businessType:        form.type,
+        city:                form.city,
+        state:               form.state,
+        businessDescription: form.about,
+      })
+    } else {
+      setStep(5)
+    }
+  }
+
+  // ── Step 5: Stripe checkout ───────────────────────────────────────────────
+  async function handleCheckout() {
+    setCheckoutLoading(true)
+    setCheckoutError(null)
+
+    // Persist generated website + business data through the Stripe redirect.
+    // App.jsx reads these from localStorage after the user signs up on /success.
+    localStorage.setItem('sf_pending_html', generatedHtml)
+    localStorage.setItem('sf_pending_data', JSON.stringify({
+      themeVibe:           vibe,
+      businessName:        form.name,
+      businessType:        form.type,
+      city:                form.city,
+      state:               form.state,
+      businessDescription: form.about,
+    }))
+
+    try {
+      await redirectToCheckout(null, null)
+    } catch (err) {
+      console.error('Checkout error:', err)
+      localStorage.removeItem('sf_pending_html')
+      localStorage.removeItem('sf_pending_data')
+      setCheckoutError('Something went wrong. Please try again.')
+      setCheckoutLoading(false)
+    }
+  }
 
   // ── Step 3: Generating ────────────────────────────────────────────────────
   if (step === 3) {
@@ -150,7 +198,7 @@ export default function Onboarding({ onClose, onComplete }) {
               >
                 Change Theme
               </button>
-              <button className="ob-btn-golive" onClick={() => setStep(5)}>
+              <button className="ob-btn-golive" onClick={handleGoLive}>
                 This is perfect, let's go live →
               </button>
             </div>
@@ -168,76 +216,69 @@ export default function Onboarding({ onClose, onComplete }) {
     )
   }
 
-  // ── Step 5: Pricing ───────────────────────────────────────────────────────
+  // ── Step 5: Pricing → Stripe checkout ────────────────────────────────────
   if (step === 5) {
     return (
       <div className="ob-overlay ob-pricing-overlay">
         <div className="ob-pricing-scroll">
-        <div className="ob-pricing-card ob-fadein">
+          <div className="ob-pricing-card ob-fadein">
 
-          <div className="ob-pricing-badge">🔥 Limited Time Special</div>
+            <div className="ob-pricing-badge">🔥 Limited Time Special</div>
 
-          <div className="ob-pricing-header">
-            <div className="ob-pricing-crossed-prices">
-              <span className="ob-pricing-cross">$39.99</span>
-              <span className="ob-pricing-cross">$29.99</span>
+            <div className="ob-pricing-header">
+              <div className="ob-pricing-crossed-prices">
+                <span className="ob-pricing-cross">$39.99</span>
+                <span className="ob-pricing-cross">$29.99</span>
+              </div>
+              <div className="ob-pricing-main-price">
+                $19.99<span className="ob-pricing-period">/month</span>
+              </div>
+              <p className="ob-pricing-billing">Billed monthly. Cancel anytime.</p>
             </div>
-            <div className="ob-pricing-main-price">
-              $19.99<span className="ob-pricing-period">/month</span>
+
+            <ul className="ob-pricing-features">
+              {FEATURES.map(f => (
+                <li key={f}>
+                  <span className="ob-pricing-check">✓</span>
+                  {f}
+                </li>
+              ))}
+            </ul>
+
+            <p className="ob-pricing-fine">No contracts. Cancel anytime.</p>
+
+            <div className={`ob-pricing-countdown ${countdown === 0 ? 'expired' : ''}`}>
+              {countdown > 0 ? (
+                <>
+                  <span className="ob-countdown-icon">⏱</span>
+                  Offer expires in <strong>{countdownMins}:{countdownSecs}</strong>
+                </>
+              ) : (
+                <span className="ob-countdown-expired">Offer expired — price may increase soon</span>
+              )}
             </div>
-            <p className="ob-pricing-billing">Billed monthly. Cancel anytime.</p>
-          </div>
 
-          <ul className="ob-pricing-features">
-            {FEATURES.map(f => (
-              <li key={f}>
-                <span className="ob-pricing-check">✓</span>
-                {f}
-              </li>
-            ))}
-          </ul>
+            <button
+              className="ob-pricing-cta"
+              onClick={handleCheckout}
+              disabled={checkoutLoading}
+            >
+              {checkoutLoading ? 'Redirecting to checkout…' : 'Start For $19.99/month'}
+            </button>
 
-          <p className="ob-pricing-fine">No contracts. Cancel anytime.</p>
-
-          <div className={`ob-pricing-countdown ${countdown === 0 ? 'expired' : ''}`}>
-            {countdown > 0 ? (
-              <>
-                <span className="ob-countdown-icon">⏱</span>
-                Offer expires in <strong>{countdownMins}:{countdownSecs}</strong>
-              </>
-            ) : (
-              <span className="ob-countdown-expired">Offer expired — price may increase soon</span>
+            {checkoutError && (
+              <p className="ob-gen-error" style={{ margin: '0 24px 8px', textAlign: 'center' }}>
+                {checkoutError}
+              </p>
             )}
+
+            <button className="ob-pricing-back" onClick={() => setStep(4)}>
+              ← Back to preview
+            </button>
+
           </div>
-
-          <button className="ob-pricing-cta" onClick={() => setStep(6)}>
-            Start For $19.99/month
-          </button>
-
-          <button className="ob-pricing-back" onClick={() => setStep(4)}>
-            ← Back to preview
-          </button>
-
-        </div>
         </div>
       </div>
-    )
-  }
-
-  // ── Step 6: Auth ─────────────────────────────────────────────────────────
-  if (step === 6) {
-    return (
-      <Auth
-        onSuccess={(user) => onComplete(user, generatedHtml, {
-            themeVibe: vibe,
-            businessName: form.name,
-            businessType: form.type,
-            city: form.city,
-            state: form.state,
-            businessDescription: form.about,
-          })}
-        onBack={() => setStep(5)}
-      />
     )
   }
 
