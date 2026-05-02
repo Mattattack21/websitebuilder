@@ -14,6 +14,16 @@ export const handler = async (event) => {
     return { statusCode: 405, body: 'Method Not Allowed' }
   }
 
+  console.log('ENV CHECK - STRIPE_PRICE_ID:', process.env.STRIPE_PRICE_ID)
+  console.log('ENV CHECK - STRIPE_SECRET_KEY exists:', !!process.env.STRIPE_SECRET_KEY)
+
+  if (!process.env.STRIPE_PRICE_ID) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: 'STRIPE_PRICE_ID is not set in environment' })
+    }
+  }
+
   try {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
     const { userId, email } = JSON.parse(event.body)
