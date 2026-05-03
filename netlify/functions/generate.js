@@ -111,6 +111,60 @@ function injectBaseStyle(html) {
   return html.replace(/<head>/i, '<head><style>html,body{background:#fff}</style>')
 }
 
+function sanitizeHtml(html) {
+  const openCount  = (html.match(/<style[\s>]/gi) || []).length
+  const closeCount = (html.match(/<\/style>/gi)   || []).length
+  console.log('[SF-SERVER] style tag count open:', openCount, 'close:', closeCount)
+
+  // Fast path — style tags balanced, body has content
+  const bodyMatch = html.match(/<body[\s>]/i)
+  const bodyClose = html.match(/<\/body>/i)
+  if (openCount === closeCount && bodyMatch && bodyClose) return html
+
+  // ── Approach: extract all CSS text, strip all <style> blocks, rebuild cleanly ──
+  const cssChunks = []
+  // Grab everything inside every <style>...</style> pair (partial or complete)
+  const styleOpenRe = /<style[^>]*>([\s\S]*?)(?:<\/style>|$)/gi
+  let m
+  while ((m = styleOpenRe.exec(html)) !== null) {
+    cssChunks.push(m[1])
+  }
+  // Also grab any trailing CSS after the last unclosed <style> tag
+  const lastUnclosed = html.lastIndexOf('<style')
+  const lastClose    = html.lastIndexOf('</style>')
+  if (lastUnclosed > lastClose) {
+    const trailingCss = html.slice(html.indexOf('>', lastUnclosed) + 1)
+    // Only add if it looks like CSS (contains { or })
+    if (trailingCss.includes('{')) cssChunks.push(trailingCss)
+  }
+
+  const combinedCss = cssChunks.join('\n')
+
+  // Remove all <style>...</style> blocks (and any unclosed trailing style content)
+  let stripped = html
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    // Remove any remaining unclosed <style ...> and everything after it up to <body or </head
+    .replace(/<style[^>]*>[\s\S]*/i, '')
+
+  // If body tag is now missing (was consumed as "CSS text"), try to recover body from stripped
+  if (!/<body[\s>]/i.test(stripped)) {
+    // Everything after </head> or after the removed style section is the body content
+    const headEnd = stripped.search(/<\/head>/i)
+    if (headEnd !== -1) {
+      const head = stripped.slice(0, headEnd + 7)
+      const rest = stripped.slice(headEnd + 7).trim()
+      stripped = head + '\n<body>\n' + rest + (rest.includes('</body>') ? '' : '\n</body>') + (rest.includes('</html>') ? '' : '\n</html>')
+    }
+  }
+
+  // Re-inject the combined CSS as a single clean <style> block in <head>
+  const cleanStyle = `<style>\n${combinedCss}\n</style>`
+  const rebuilt = stripped.replace(/<\/head>/i, cleanStyle + '\n</head>')
+
+  console.log('[SF-SERVER] sanitized — body present:', /<body[\s>]/i.test(rebuilt), 'html closes:', rebuilt.trimEnd().toLowerCase().endsWith('</html>'))
+  return rebuilt
+}
+
 // ── Website generation ────────────────────────────────────────────────────────
 
 async function handleGenerateWebsite({
@@ -180,9 +234,12 @@ OUTPUT RULES — CRITICAL:
 
   // Truncation recovery: if max_tokens cut the response short, close any open document
   if (!html.trimEnd().toLowerCase().endsWith('</html>')) {
-    console.warn('[SF] HTML appears truncated — patching close tags')
+    console.warn('[SF-SERVER] HTML appears truncated — patching close tags')
     html = html + '\n</body></html>'
   }
+
+  // Fix unclosed/mismatched style blocks that cause body to parse as CSS text
+  html = sanitizeHtml(html)
 
   if (photoBase64) {
     html = html.replace(
