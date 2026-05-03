@@ -181,6 +181,10 @@ OUTPUT: Start with <!DOCTYPE html>, end with </html>. No markdown, no code fence
   })
 
   let raw = message.content[0].text.trim()
+  console.log('[SF-SERVER] raw has closing style tag:', raw.includes('</style>'))
+  console.log('[SF-SERVER] raw first 1000:', raw.substring(0, 1000))
+  console.log('[SF-SERVER] raw 1000-2000:', raw.substring(1000, 2000))
+
   // Strip code fences if Claude wrapped the output
   raw = raw.replace(/^```[\w]*\s*/i, '').replace(/\s*```\s*$/i, '').trim()
   // Extract the HTML document — grab from <!DOCTYPE html> to </html>, discarding any preamble
