@@ -116,8 +116,14 @@ function ensureClosedStyles(html) {
   const closeCount = (html.match(/<\/style>/gi) || []).length
   console.log('[SF-SERVER] style open:', openCount, 'close:', closeCount)
   if (openCount > closeCount) {
-    html = html.replace(/<body/i, '</style>\n<body')
-    console.log('[SF-SERVER] inserted missing </style> before <body>')
+    if (/<body[\s>]/i.test(html)) {
+      html = html.replace(/<body[\s>]/i, (m) => '</style>\n' + m)
+      console.log('[SF-SERVER] inserted missing </style> before <body>')
+    } else {
+      // Truncated mid-CSS: no opening <body> tag exists — insert </style><body> before </body>
+      html = html.replace(/<\/body>/i, '</style>\n<body>\n</body>')
+      console.log('[SF-SERVER] inserted missing </style><body> before </body> (truncated path)')
+    }
   }
   return html
 }
