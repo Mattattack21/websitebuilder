@@ -157,11 +157,36 @@ function sanitizeHtml(html) {
     }
   }
 
+  // ── Extract all <script> blocks before further stripping ──────────────────
+  const scriptChunks = []
+  const scriptRe = /<script[^>]*>([\s\S]*?)(?:<\/script>|$)/gi
+  let s
+  while ((s = scriptRe.exec(stripped)) !== null) {
+    if (s[1].trim()) scriptChunks.push(s[1])
+  }
+  // Catch any unclosed trailing <script> tag
+  const lastScriptOpen  = stripped.lastIndexOf('<script')
+  const lastScriptClose = stripped.lastIndexOf('</script>')
+  if (lastScriptOpen > lastScriptClose) {
+    const trailingJs = stripped.slice(stripped.indexOf('>', lastScriptOpen) + 1)
+    if (trailingJs.trim()) scriptChunks.push(trailingJs)
+  }
+  // Strip all <script> blocks (closed and unclosed)
+  stripped = stripped
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<script[^>]*>[\s\S]*/i, '')
+
   // Re-inject the combined CSS as a single clean <style> block in <head>
   const cleanStyle = `<style>\n${combinedCss}\n</style>`
-  const rebuilt = stripped.replace(/<\/head>/i, cleanStyle + '\n</head>')
+  let rebuilt = stripped.replace(/<\/head>/i, cleanStyle + '\n</head>')
 
-  console.log('[SF-SERVER] sanitized — body present:', /<body[\s>]/i.test(rebuilt), 'html closes:', rebuilt.trimEnd().toLowerCase().endsWith('</html>'))
+  // Re-inject all scripts as one clean <script> block before </body>
+  if (scriptChunks.length) {
+    const cleanScript = `<script>\n${scriptChunks.join('\n')}\n</script>`
+    rebuilt = rebuilt.replace(/<\/body>/i, cleanScript + '\n</body>')
+  }
+
+  console.log('[SF-SERVER] sanitized — body present:', /<body[\s>]/i.test(rebuilt), 'scripts:', scriptChunks.length, 'html closes:', rebuilt.trimEnd().toLowerCase().endsWith('</html>'))
   return rebuilt
 }
 
@@ -184,32 +209,49 @@ async function handleGenerateWebsite({
     instagram     ? `- Instagram: ${instagram}`                : null,
   ].filter(Boolean).join('\n')
 
-  const prompt = `You are a professional web designer. Build a stunning single-page business website as a complete HTML document.
+  const prompt = `You are a senior web designer at a world-class creative agency. Build a premium single-page business website that looks like it cost $5,000. Every visual detail must be polished and intentional.
 
 BUSINESS: ${businessName} | ${businessType} | ${city}, ${state}${businessDescription ? ` | ${businessDescription}` : ''}
 ${contactBlock || ''}
-THEME — "${theme.label}": ${theme.css}
+THEME — "${theme.label}":
+${theme.css}
 
-REQUIRED SECTIONS (all mandatory, in this order):
-1. STICKY NAV: Name left, phone click-to-call (tel:${telDigits}) right. Fixed top. Theme background.
-2. HERO (min-height 80vh): Theme gradient background. Bold headline with business name. Tagline. Two buttons: "Get a Free Quote" + "📞 Call Now" (tel:${telDigits}).
-3. ABOUT: 2 sentences of specific copy for ${businessName} in ${city}. Decorative accent element.
-4. SERVICES: 3 cards in a CSS grid (3-col desktop, 1-col mobile). Each: emoji icon, service name, 1-sentence description. Hover lift effect.
-5. CONTACT FORM (MANDATORY — NEVER OMIT): Heading "Get a Free Quote". Form with id="contact-form". Fields: name="name" (text), name="phone" (tel), name="email" (email), name="message" (textarea). Styled submit button.${businessHours ? ` Hours: ${businessHours}.` : ''}${address ? ` Address: ${address}.` : ''}
-6. FOOTER: Name, phone, email, address, socials, copyright "© ${new Date().getFullYear()} ${businessName}".
-7. FIXED CALL BUTTON: position:fixed, bottom:24px, right:24px, z-index:9999. "📞 Call Now" → tel:${telDigits}.${photoBase64 ? `\n8. PHOTO: Show provided image in hero/about using src="__BUSINESS_PHOTO__".` : ''}
+TYPOGRAPHY: Add this Google Fonts link in <head>: <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+Use Inter for body text. Use Playfair Display for hero headline only.
 
-CSS: Gradients on hero + buttons. Box-shadows on cards. Hover transitions (0.2s). Hero fade-in @keyframes. Mobile-first, @media(min-width:768px) for desktop. Styled inputs with focus states.
+REQUIRED SECTIONS — ALL MANDATORY:
 
-JAVASCRIPT RULES — CRITICAL:
-- NEVER use eval(), new Function(), or pass strings to setTimeout() or setInterval().
-- Only use addEventListener, querySelector, querySelectorAll, classList, and standard DOM methods.
-- Inline JS in a single <script> tag before </body> only.
+1. NAV: Fixed top. Logo/name left. Phone as styled pill button right (tel:${telDigits}). Backdrop-filter: blur(12px) with semi-transparent background. Box-shadow on scroll via JS class toggle.
+
+2. HERO (min-height: 90vh, display:flex, align-items:center): Theme gradient background. Centered content. Business name in Playfair Display, 72px desktop / 42px mobile, with a colored text gradient using background-clip:text. Subheadline in Inter 20px. Two CTA buttons: solid primary + ghost outline. A subtle decorative shape or pattern in the background using CSS (circles, lines, or gradient blobs using pseudo-elements).
+
+3. ABOUT: Two-column layout on desktop (text left, decorative right). Compelling 3-sentence copy. A colored accent bar before the heading. A stat row showing 3 trust numbers (e.g. "500+ Clients", "15 Years", "100% Satisfaction").
+
+4. SERVICES: Section heading centered. CSS Grid, 3 columns desktop / 1 mobile. Each card: large emoji (48px), bold title, 2-sentence description, subtle border, background white, border-radius:16px, box-shadow, transform:translateY(-6px) on hover with transition 0.3s.
+
+5. LEAD FORM (MANDATORY — NEVER OMIT): Full-width section with contrasting background. Heading + subheading. Form id="contact-form". Fields: name="name", name="phone", name="email", name="message". Each input: padding 14px 18px, border-radius 10px, border 2px solid, focus outline in theme color. Large submit button full-width, theme gradient, font-weight:700.${businessHours ? ` Hours: ${businessHours}.` : ''}${address ? ` Address: ${address}.` : ''}
+
+6. FOOTER: Dark background. Three columns: brand + tagline, quick links, contact info. Bottom bar with copyright "© ${new Date().getFullYear()} ${businessName}. All rights reserved."
+
+7. FLOATING CTA: position:fixed, bottom:28px, right:28px. Pill button "📞 Call Now" → tel:${telDigits}. Theme primary color, box-shadow, pulse animation using @keyframes.${photoBase64 ? `\n\n8. PHOTO: Display in hero or about section. src="__BUSINESS_PHOTO__". Border-radius:16px, box-shadow.` : ''}
+
+CSS CRAFT — THIS MUST LOOK PREMIUM:
+- CSS custom properties (--primary, --accent, --text, --bg) defined on :root
+- Hero gradient: bold, theme-specific, NOT plain white
+- All interactive elements: smooth transitions (0.2s–0.3s ease)
+- Cards: white background, border-radius 16px, box-shadow 0 4px 24px rgba(0,0,0,0.08), hover lift
+- Section padding: 96px 0 desktop, 64px 0 mobile
+- Max-width 1200px centered container with padding 0 24px
+- Mobile-first, @media(min-width:768px) for 2-col, @media(min-width:1024px) for full layout
+
+JAVASCRIPT RULES:
+- Only addEventListener, querySelector, classList — no eval(), no new Function(), no string setTimeout/setInterval
+- One <script> block before </body>
 
 OUTPUT RULES — CRITICAL:
 - Start with <!DOCTYPE html>, end with </html>. Nothing before or after.
-- No markdown, no code fences, no explanation text.
-- All CSS in one <style> tag in <head>. No external resources.`
+- No markdown, no code fences, no explanation.
+- All CSS in one <style> tag in <head>. Google Fonts link before the style tag.`
 
   const messageContent = [{ type: 'text', text: prompt }]
   if (photoBase64) {
