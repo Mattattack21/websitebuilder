@@ -164,6 +164,8 @@ SECTIONS (all required):
 STYLE RULES: section padding 80px 0, max-width 1100px container, smooth transitions on all hover states, mobile-first with @media(min-width:768px).
 JS RULES: only addEventListener/querySelector/classList, one <script> before </body>, no eval/new Function.
 
+IMPORTANT: Keep your CSS concise and under 2000 tokens. Write all CSS first, close the </style> tag, then write all HTML body content. Never run out of tokens before closing </style> and writing the body.
+
 OUTPUT: Start with <!DOCTYPE html>, end with </html>. No markdown, no code fences, no extra text.`
 
   const messageContent = [{ type: 'text', text: prompt }]
@@ -176,7 +178,7 @@ OUTPUT: Start with <!DOCTYPE html>, end with </html>. No markdown, no code fence
 
   const message = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
-    max_tokens: 4000,
+    max_tokens: 6000,
     messages: [{ role: 'user', content: messageContent }],
   })
 
