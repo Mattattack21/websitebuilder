@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../utils/supabase'
 import { updateWebsite, askSupportQuestion } from '../lib/generateWebsite'
 import './Dashboard.css'
@@ -34,8 +34,24 @@ const FAQS = [
 ]
 
 export default function Dashboard({ user, generatedHtml, regenerating, onSiteUpdate, onChangeTheme, onRegenerate }) {
-  const [activeTab, setActiveTab] = useState('website')
-  const [siteHtml, setSiteHtml] = useState(generatedHtml)
+  const [activeTab, setActiveTab]   = useState('website')
+  const [siteHtml, setSiteHtml]     = useState(generatedHtml)
+  const [siteUrl, setSiteUrl]       = useState(null)
+  const siteUrlRef                  = useRef(null)
+
+  // Create a blob URL whenever siteHtml changes; revoke the previous one
+  useEffect(() => {
+    if (!siteHtml) return
+    const blob = new Blob([siteHtml], { type: 'text/html' })
+    const url  = URL.createObjectURL(blob)
+    if (siteUrlRef.current) URL.revokeObjectURL(siteUrlRef.current)
+    siteUrlRef.current = url
+    setSiteUrl(url)
+    return () => {
+      URL.revokeObjectURL(url)
+      siteUrlRef.current = null
+    }
+  }, [siteHtml])
 
   // Leads
   const [leads, setLeads] = useState([])
@@ -211,10 +227,9 @@ export default function Dashboard({ user, generatedHtml, regenerating, onSiteUpd
             {siteHtml ? (
               <div className="dash-iframe-wrap">
                 <iframe
-                  key={siteHtml}
-                  srcDoc={siteHtml}
+                  key={siteUrl}
+                  src={siteUrl}
                   title="Your website preview"
-                  sandbox="allow-scripts allow-forms allow-popups"
                 />
               </div>
             ) : regenerating ? (

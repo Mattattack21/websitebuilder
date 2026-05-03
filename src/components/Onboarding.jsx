@@ -43,12 +43,28 @@ export default function Onboarding({ onClose, onComplete, user }) {
   const [genProgress, setGenProgress] = useState(0)
   const [genMsgIdx, setGenMsgIdx]     = useState(0)
   const [generatedHtml, setGeneratedHtml] = useState(null)
-  const [genError, setGenError]       = useState(null)
-  const [genRetryMsg, setGenRetryMsg] = useState(null)
-  const [countdown, setCountdown]     = useState(14 * 60 + 59)
+  const [previewUrl, setPreviewUrl]     = useState(null)
+  const [genError, setGenError]         = useState(null)
+  const [genRetryMsg, setGenRetryMsg]   = useState(null)
+  const [countdown, setCountdown]       = useState(14 * 60 + 59)
   const [checkoutLoading, setCheckoutLoading] = useState(false)
   const [checkoutError, setCheckoutError]     = useState(null)
-  const cancelledRef = useRef(false)
+  const cancelledRef  = useRef(false)
+  const previewUrlRef = useRef(null)
+
+  // Create a blob URL whenever generatedHtml changes; revoke the previous one
+  useEffect(() => {
+    if (!generatedHtml) return
+    const blob = new Blob([generatedHtml], { type: 'text/html' })
+    const url  = URL.createObjectURL(blob)
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current)
+    previewUrlRef.current = url
+    setPreviewUrl(url)
+    return () => {
+      URL.revokeObjectURL(url)
+      previewUrlRef.current = null
+    }
+  }, [generatedHtml])
 
   useEffect(() => {
     if (step !== 3) return
@@ -216,11 +232,10 @@ export default function Onboarding({ onClose, onComplete, user }) {
           </div>
           <p className="ob-preview-subtitle">Here's your new website. Scroll through and see how it looks.</p>
           <iframe
-            key={generatedHtml}
+            key={previewUrl}
             className="ob-preview-iframe ob-fadein"
-            srcDoc={generatedHtml}
+            src={previewUrl}
             title="Your generated website"
-            sandbox="allow-scripts allow-forms allow-popups"
           />
         </div>
       </div>
