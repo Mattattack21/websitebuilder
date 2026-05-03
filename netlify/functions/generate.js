@@ -107,6 +107,10 @@ function ok(data) {
   }
 }
 
+function injectBaseStyle(html) {
+  return html.replace(/<head>/i, '<head><style>html,body{background:#fff}</style>')
+}
+
 // ── Website generation ────────────────────────────────────────────────────────
 
 async function handleGenerateWebsite({
@@ -176,7 +180,7 @@ OUTPUT RULES — CRITICAL:
     )
   }
 
-  return html
+  return injectBaseStyle(html)
 }
 
 // ── Content update ────────────────────────────────────────────────────────────
@@ -203,7 +207,7 @@ Requirements:
   const raw2 = message.content[0].text.trim()
     .replace(/^```[\w]*\s*/i, '').replace(/\s*```\s*$/i, '').trim()
   const docMatch2 = raw2.match(/<!doctype\s+html[\s\S]*<\/html>/i)
-  return docMatch2 ? docMatch2[0] : raw2
+  return injectBaseStyle(docMatch2 ? docMatch2[0] : raw2)
 }
 
 // ── Support chat ──────────────────────────────────────────────────────────────
