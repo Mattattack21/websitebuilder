@@ -107,26 +107,6 @@ function ok(data) {
   }
 }
 
-function injectBaseStyle(html) {
-  return html.replace(/<head>/i, '<head><style>html,body{background:#fff}</style>')
-}
-
-function ensureClosedStyles(html) {
-  const openCount  = (html.match(/<style/gi)   || []).length
-  const closeCount = (html.match(/<\/style>/gi) || []).length
-  console.log('[SF-SERVER] style open:', openCount, 'close:', closeCount)
-  if (openCount > closeCount) {
-    if (/<body[\s>]/i.test(html)) {
-      html = html.replace(/<body[\s>]/i, (m) => '</style>\n' + m)
-      console.log('[SF-SERVER] inserted missing </style> before <body>')
-    } else {
-      // Truncated mid-CSS: no opening <body> tag exists — insert </style><body> before </body>
-      html = html.replace(/<\/body>/i, '</style>\n<body>\n</body>')
-      console.log('[SF-SERVER] inserted missing </style><body> before </body> (truncated path)')
-    }
-  }
-  return html
-}
 
 // ── Website generation ────────────────────────────────────────────────────────
 
@@ -147,32 +127,27 @@ async function handleGenerateWebsite({
     instagram     ? `- Instagram: ${instagram}`                : null,
   ].filter(Boolean).join('\n')
 
-  const prompt = `Build a complete, professional single-page business website. Use clean semantic HTML with all CSS in one <style> tag.
+  const prompt = `Build a complete, professional single-page business website using ONLY inline styles. Do NOT use a <style> block or CSS classes. Every style must be written directly on the element as a style attribute, e.g. <div style="background: #1B3A6B; color: white; padding: 80px 40px;">.
 
 BUSINESS: ${businessName} | ${businessType} | ${city}, ${state}${businessDescription ? ` | ${businessDescription}` : ''}
 ${contactBlock || ''}
 THEME — "${theme.label}":
 ${theme.css}
 
-FONTS: font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif for body. Georgia, serif for hero headline.
+FONTS: Use style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" on body. Use style="font-family: Georgia, serif" on hero headline.
 
-CSS VARIABLES on :root: --primary, --accent, --bg, --text matching the theme colors above.
+SECTIONS (all required — style every element with inline styles):
+1. NAV: position:fixed; top:0; left:0; right:0; z-index:1000, name left, phone pill-button right (tel:${telDigits}), semi-transparent background, box-shadow.
+2. HERO: min-height:85vh, theme gradient background, large bold headline (font-family:Georgia,serif; font-size:60px), subheadline, two buttons (solid + outline), centered with display:flex; align-items:center; justify-content:center; flex-direction:column; text-align:center.
+3. ABOUT: display:flex; gap:40px on desktop wrapper, accent bar (width:4px; height:40px inline block) before heading, 2-sentence copy, 3 trust stats side by side.
+4. SERVICES: display:flex; flex-wrap:wrap; gap:24px wrapper, 3 cards each with emoji icon (font-size:40px), bold title, 1-sentence description, border-radius:12px, box-shadow:0 4px 16px rgba(0,0,0,0.1), padding:32px.
+5. CONTACT FORM (NEVER OMIT): id="contact-form", fields name="name" name="phone" name="email" name="message", every input styled inline (padding:12px 16px; border-radius:8px; border:2px solid #ccc; width:100%; display:block; margin-bottom:16px), full-width submit button with gradient background.${businessHours ? ` Hours: ${businessHours}.` : ''}${address ? ` Address: ${address}.` : ''}
+6. FOOTER: background:#111; color:#fff; padding:40px; text-align:center, name + copyright "© ${new Date().getFullYear()} ${businessName}", phone, email.
+7. FIXED BUTTON: position:fixed; bottom:24px; right:24px; "📞 Call Now" → tel:${telDigits}, theme color background, border-radius:999px, box-shadow, padding:14px 24px; color:#fff; font-weight:700; text-decoration:none; display:inline-block.${photoBase64 ? `\n8. PHOTO: src="__BUSINESS_PHOTO__" style="border-radius:12px; max-width:100%; height:auto" in hero or about.` : ''}
 
-SECTIONS (all required):
-1. NAV: Fixed top, name left, phone pill-button right (tel:${telDigits}), semi-transparent background, box-shadow.
-2. HERO: min-height:85vh, theme gradient background, large bold headline (Georgia, 60px), subheadline, two buttons (solid + outline), hero centered with flexbox.
-3. ABOUT: Two columns desktop, accent bar before heading, 2-sentence copy, 3 trust stats (e.g. "10+ Years", "500 Clients", "5★ Rating").
-4. SERVICES: CSS grid 3-col desktop/1-col mobile, 3 cards each with emoji icon (40px), bold title, 1-sentence description, border-radius:12px, box-shadow, hover lift (translateY(-4px) 0.2s ease).
-5. CONTACT FORM (NEVER OMIT): id="contact-form", fields name="name" name="phone" name="email" name="message", styled inputs (padding:12px 16px, border-radius:8px, border:2px solid), full-width gradient submit button.${businessHours ? ` Hours: ${businessHours}.` : ''}${address ? ` Address: ${address}.` : ''}
-6. FOOTER: Dark bg, name + copyright "© ${new Date().getFullYear()} ${businessName}", phone, email.
-7. FIXED BUTTON: position:fixed, bottom:24px, right:24px, "📞 Call Now" → tel:${telDigits}, theme color, border-radius:999px, box-shadow.${photoBase64 ? `\n8. PHOTO: src="__BUSINESS_PHOTO__", border-radius:12px, in hero or about.` : ''}
+JS RULES: only addEventListener/querySelector, one <script> before </body>, no eval/new Function.
 
-STYLE RULES: section padding 80px 0, max-width 1100px container, smooth transitions on all hover states, mobile-first with @media(min-width:768px).
-JS RULES: only addEventListener/querySelector/classList, one <script> before </body>, no eval/new Function.
-
-IMPORTANT: Keep your CSS concise and under 2000 tokens. Write all CSS first, close the </style> tag, then write all HTML body content. Never run out of tokens before closing </style> and writing the body.
-
-OUTPUT: Start with <!DOCTYPE html>, end with </html>. No markdown, no code fences, no extra text.`
+OUTPUT: Start with <!DOCTYPE html>, end with </html>. No markdown, no code fences, no extra text. No <style> blocks whatsoever.`
 
   const messageContent = [{ type: 'text', text: prompt }]
   if (photoBase64) {
@@ -189,9 +164,7 @@ OUTPUT: Start with <!DOCTYPE html>, end with </html>. No markdown, no code fence
   })
 
   let raw = message.content[0].text.trim()
-  console.log('[SF-SERVER] raw has closing style tag:', raw.includes('</style>'))
-  console.log('[SF-SERVER] raw first 1000:', raw.substring(0, 1000))
-  console.log('[SF-SERVER] raw 1000-2000:', raw.substring(1000, 2000))
+  console.log('[SF-SERVER] raw first 500:', raw.substring(0, 500))
 
   // Strip code fences if Claude wrapped the output
   raw = raw.replace(/^```[\w]*\s*/i, '').replace(/\s*```\s*$/i, '').trim()
@@ -205,9 +178,6 @@ OUTPUT: Start with <!DOCTYPE html>, end with </html>. No markdown, no code fence
     html = html + '\n</body></html>'
   }
 
-  // Fix unclosed style blocks that cause body content to parse as CSS text
-  html = ensureClosedStyles(html)
-
   if (photoBase64) {
     html = html.replace(
       'src="__BUSINESS_PHOTO__"',
@@ -215,7 +185,7 @@ OUTPUT: Start with <!DOCTYPE html>, end with </html>. No markdown, no code fence
     )
   }
 
-  return injectBaseStyle(html)
+  return html
 }
 
 // ── Content update ────────────────────────────────────────────────────────────
