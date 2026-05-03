@@ -209,49 +209,30 @@ async function handleGenerateWebsite({
     instagram     ? `- Instagram: ${instagram}`                : null,
   ].filter(Boolean).join('\n')
 
-  const prompt = `You are a senior web designer at a world-class creative agency. Build a premium single-page business website that looks like it cost $5,000. Every visual detail must be polished and intentional.
+  const prompt = `Build a complete, professional single-page business website. Use clean semantic HTML with all CSS in one <style> tag.
 
 BUSINESS: ${businessName} | ${businessType} | ${city}, ${state}${businessDescription ? ` | ${businessDescription}` : ''}
 ${contactBlock || ''}
 THEME — "${theme.label}":
 ${theme.css}
 
-TYPOGRAPHY: Add this Google Fonts link in <head>: <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
-Use Inter for body text. Use Playfair Display for hero headline only.
+FONTS: font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif for body. Georgia, serif for hero headline.
 
-REQUIRED SECTIONS — ALL MANDATORY:
+CSS VARIABLES on :root: --primary, --accent, --bg, --text matching the theme colors above.
 
-1. NAV: Fixed top. Logo/name left. Phone as styled pill button right (tel:${telDigits}). Backdrop-filter: blur(12px) with semi-transparent background. Box-shadow on scroll via JS class toggle.
+SECTIONS (all required):
+1. NAV: Fixed top, name left, phone pill-button right (tel:${telDigits}), semi-transparent background, box-shadow.
+2. HERO: min-height:85vh, theme gradient background, large bold headline (Georgia, 60px), subheadline, two buttons (solid + outline), hero centered with flexbox.
+3. ABOUT: Two columns desktop, accent bar before heading, 2-sentence copy, 3 trust stats (e.g. "10+ Years", "500 Clients", "5★ Rating").
+4. SERVICES: CSS grid 3-col desktop/1-col mobile, 3 cards each with emoji icon (40px), bold title, 1-sentence description, border-radius:12px, box-shadow, hover lift (translateY(-4px) 0.2s ease).
+5. CONTACT FORM (NEVER OMIT): id="contact-form", fields name="name" name="phone" name="email" name="message", styled inputs (padding:12px 16px, border-radius:8px, border:2px solid), full-width gradient submit button.${businessHours ? ` Hours: ${businessHours}.` : ''}${address ? ` Address: ${address}.` : ''}
+6. FOOTER: Dark bg, name + copyright "© ${new Date().getFullYear()} ${businessName}", phone, email.
+7. FIXED BUTTON: position:fixed, bottom:24px, right:24px, "📞 Call Now" → tel:${telDigits}, theme color, border-radius:999px, box-shadow.${photoBase64 ? `\n8. PHOTO: src="__BUSINESS_PHOTO__", border-radius:12px, in hero or about.` : ''}
 
-2. HERO (min-height: 90vh, display:flex, align-items:center): Theme gradient background. Centered content. Business name in Playfair Display, 72px desktop / 42px mobile, with a colored text gradient using background-clip:text. Subheadline in Inter 20px. Two CTA buttons: solid primary + ghost outline. A subtle decorative shape or pattern in the background using CSS (circles, lines, or gradient blobs using pseudo-elements).
+STYLE RULES: section padding 80px 0, max-width 1100px container, smooth transitions on all hover states, mobile-first with @media(min-width:768px).
+JS RULES: only addEventListener/querySelector/classList, one <script> before </body>, no eval/new Function.
 
-3. ABOUT: Two-column layout on desktop (text left, decorative right). Compelling 3-sentence copy. A colored accent bar before the heading. A stat row showing 3 trust numbers (e.g. "500+ Clients", "15 Years", "100% Satisfaction").
-
-4. SERVICES: Section heading centered. CSS Grid, 3 columns desktop / 1 mobile. Each card: large emoji (48px), bold title, 2-sentence description, subtle border, background white, border-radius:16px, box-shadow, transform:translateY(-6px) on hover with transition 0.3s.
-
-5. LEAD FORM (MANDATORY — NEVER OMIT): Full-width section with contrasting background. Heading + subheading. Form id="contact-form". Fields: name="name", name="phone", name="email", name="message". Each input: padding 14px 18px, border-radius 10px, border 2px solid, focus outline in theme color. Large submit button full-width, theme gradient, font-weight:700.${businessHours ? ` Hours: ${businessHours}.` : ''}${address ? ` Address: ${address}.` : ''}
-
-6. FOOTER: Dark background. Three columns: brand + tagline, quick links, contact info. Bottom bar with copyright "© ${new Date().getFullYear()} ${businessName}. All rights reserved."
-
-7. FLOATING CTA: position:fixed, bottom:28px, right:28px. Pill button "📞 Call Now" → tel:${telDigits}. Theme primary color, box-shadow, pulse animation using @keyframes.${photoBase64 ? `\n\n8. PHOTO: Display in hero or about section. src="__BUSINESS_PHOTO__". Border-radius:16px, box-shadow.` : ''}
-
-CSS CRAFT — THIS MUST LOOK PREMIUM:
-- CSS custom properties (--primary, --accent, --text, --bg) defined on :root
-- Hero gradient: bold, theme-specific, NOT plain white
-- All interactive elements: smooth transitions (0.2s–0.3s ease)
-- Cards: white background, border-radius 16px, box-shadow 0 4px 24px rgba(0,0,0,0.08), hover lift
-- Section padding: 96px 0 desktop, 64px 0 mobile
-- Max-width 1200px centered container with padding 0 24px
-- Mobile-first, @media(min-width:768px) for 2-col, @media(min-width:1024px) for full layout
-
-JAVASCRIPT RULES:
-- Only addEventListener, querySelector, classList — no eval(), no new Function(), no string setTimeout/setInterval
-- One <script> block before </body>
-
-OUTPUT RULES — CRITICAL:
-- Start with <!DOCTYPE html>, end with </html>. Nothing before or after.
-- No markdown, no code fences, no explanation.
-- All CSS in one <style> tag in <head>. Google Fonts link before the style tag.`
+OUTPUT: Start with <!DOCTYPE html>, end with </html>. No markdown, no code fences, no extra text.`
 
   const messageContent = [{ type: 'text', text: prompt }]
   if (photoBase64) {
