@@ -122,7 +122,8 @@ export async function generateWebsite(params, user, onProgress, onRetry) {
     clearInterval(ticker)
 
     console.log('[SF] style tags in HTML:', (rawHtml.match(/<style/g)||[]).length)
-    console.log('[SF] style content length:', rawHtml.match(/<style>([\s\S]*?)<\/style>/)?.[1]?.length ?? 0)
+    console.log('[SF] style content length:', rawHtml.match(/<style[^>]*>([\s\S]*?)<\/style>/i)?.[1]?.length ?? 0)
+    console.log('[SF] HTML between base style and meta:', rawHtml.substring(rawHtml.indexOf('</style>') + 8, rawHtml.indexOf('</style>') + 8 + 500))
 
     const html = injectLeadScript(rawHtml, user?.id ?? null)
 
