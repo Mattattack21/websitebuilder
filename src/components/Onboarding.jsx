@@ -220,7 +220,7 @@ export default function Onboarding({ onClose, onComplete, user }) {
             className="ob-preview-iframe ob-fadein"
             srcDoc={generatedHtml}
             title="Your generated website"
-            sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+            sandbox="allow-scripts allow-forms allow-popups"
           />
         </div>
       </div>
