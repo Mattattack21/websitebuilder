@@ -147,6 +147,11 @@ REQUIRED SECTIONS (all mandatory, in this order):
 
 CSS: Gradients on hero + buttons. Box-shadows on cards. Hover transitions (0.2s). Hero fade-in @keyframes. Mobile-first, @media(min-width:768px) for desktop. Styled inputs with focus states.
 
+JAVASCRIPT RULES — CRITICAL:
+- NEVER use eval(), new Function(), or pass strings to setTimeout() or setInterval().
+- Only use addEventListener, querySelector, querySelectorAll, classList, and standard DOM methods.
+- Inline JS in a single <script> tag before </body> only.
+
 OUTPUT RULES — CRITICAL:
 - Start with <!DOCTYPE html>, end with </html>. Nothing before or after.
 - No markdown, no code fences, no explanation text.
