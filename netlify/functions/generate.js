@@ -161,7 +161,7 @@ OUTPUT RULES — CRITICAL:
   }
 
   const message = await client.messages.create({
-    model: 'claude-opus-4-7',
+    model: 'claude-haiku-4-5-20251001',
     max_tokens: 4000,
     messages: [{ role: 'user', content: messageContent }],
   })
