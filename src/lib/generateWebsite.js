@@ -88,6 +88,7 @@ async function callGenerate(payload) {
   }
   const json = await res.json()
   console.log('[SF] response html length:', json.html?.length ?? 0)
+  console.log('[SF] html tail:', json.html?.slice(-80) ?? 'NULL')
   return json
 }
 

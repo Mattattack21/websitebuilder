@@ -162,7 +162,7 @@ OUTPUT RULES — CRITICAL:
 
   const message = await client.messages.create({
     model: 'claude-opus-4-7',
-    max_tokens: 2500,
+    max_tokens: 4000,
     messages: [{ role: 'user', content: messageContent }],
   })
 
@@ -172,6 +172,12 @@ OUTPUT RULES — CRITICAL:
   // Extract the HTML document — grab from <!DOCTYPE html> to </html>, discarding any preamble
   const docMatch = raw.match(/<!doctype\s+html[\s\S]*<\/html>/i)
   let html = docMatch ? docMatch[0] : raw
+
+  // Truncation recovery: if max_tokens cut the response short, close any open document
+  if (!html.trimEnd().toLowerCase().endsWith('</html>')) {
+    console.warn('[SF] HTML appears truncated — patching close tags')
+    html = html + '\n</body></html>'
+  }
 
   if (photoBase64) {
     html = html.replace(
