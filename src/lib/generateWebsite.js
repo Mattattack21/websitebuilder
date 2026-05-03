@@ -125,6 +125,8 @@ export async function generateWebsite(params, user, onProgress, onRetry) {
     const _allStyleContent = [...rawHtml.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi)].map(m => m[1]).join('')
     console.log('[SF] style content length (all tags):', _allStyleContent.length)
     console.log('[SF] HTML around body tag:', rawHtml.substring(rawHtml.indexOf('<body'), rawHtml.indexOf('<body') + 100))
+    console.log('[SF] first style block content:', rawHtml.match(/<style[^>]*>([\s\S]*?)<\/style>/i)?.[1]?.substring(0, 100))
+    console.log('[SF] second style block exists:', (rawHtml.match(/<style/gi)||[]).length > 1)
 
     const html = injectLeadScript(rawHtml, user?.id ?? null)
 
