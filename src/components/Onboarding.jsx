@@ -226,8 +226,9 @@ export default function Onboarding({ onClose, onComplete, user }) {
           <p className="ob-preview-subtitle">Here's your new website. Scroll through and see how it looks.</p>
           <iframe
             ref={iframeRef}
-            className="ob-preview-iframe ob-fadein"
+            className="ob-preview-iframe"
             title="Your generated website"
+            style={{ border: '5px solid red', width: '100%', height: '70vh', minHeight: '500px', display: 'block' }}
             onLoad={() => console.log('[SF] iframe onLoad fired')}
             onError={(e) => console.log('[SF] iframe onError:', e)}
           />
