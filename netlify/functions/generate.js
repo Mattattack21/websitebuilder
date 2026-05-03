@@ -111,90 +111,15 @@ function injectBaseStyle(html) {
   return html.replace(/<head>/i, '<head><style>html,body{background:#fff}</style>')
 }
 
-function sanitizeHtml(html) {
-  const openCount  = (html.match(/<style[\s>]/gi) || []).length
-  const closeCount = (html.match(/<\/style>/gi)   || []).length
-  console.log('[SF-SERVER] style tag count open:', openCount, 'close:', closeCount)
-
-  // Fast path — style tags balanced, body has content
-  const bodyMatch = html.match(/<body[\s>]/i)
-  const bodyClose = html.match(/<\/body>/i)
-  if (openCount === closeCount && bodyMatch && bodyClose) return html
-
-  // ── Approach: extract all CSS text, strip all <style> blocks, rebuild cleanly ──
-  const cssChunks = []
-  // Grab everything inside every <style>...</style> pair (partial or complete)
-  const styleOpenRe = /<style[^>]*>([\s\S]*?)(?:<\/style>|$)/gi
-  let m
-  while ((m = styleOpenRe.exec(html)) !== null) {
-    cssChunks.push(m[1])
+function ensureClosedStyles(html) {
+  const openCount  = (html.match(/<style/gi)   || []).length
+  const closeCount = (html.match(/<\/style>/gi) || []).length
+  console.log('[SF-SERVER] style open:', openCount, 'close:', closeCount)
+  if (openCount > closeCount) {
+    html = html.replace(/<body/i, '</style>\n<body')
+    console.log('[SF-SERVER] inserted missing </style> before <body>')
   }
-  // Also grab any trailing CSS after the last unclosed <style> tag
-  const lastUnclosed = html.lastIndexOf('<style')
-  const lastClose    = html.lastIndexOf('</style>')
-  if (lastUnclosed > lastClose) {
-    const trailingCss = html.slice(html.indexOf('>', lastUnclosed) + 1)
-    // Only add if it looks like CSS (contains { or })
-    if (trailingCss.includes('{')) cssChunks.push(trailingCss)
-  }
-
-  const combinedCss = cssChunks.join('\n')
-  console.log('[SF-SERVER] CSS extracted length:', combinedCss.length)
-
-  // Remove closed <style>...</style> blocks first
-  let stripped = html.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-  // Remove any remaining unclosed <style> tag — but only up to </head> or <body, not the whole document
-  stripped = stripped.replace(/<style[^>]*>[\s\S]*?(?=<\/head>|<body)/i, '')
-  // If still has an unclosed <style> with no head/body boundary, remove it and preserve what follows
-  stripped = stripped.replace(/<style[^>]*>[^<]*/gi, '')
-
-  // Ensure </head> exists so re-injection has a target; insert before <body if missing
-  if (!/<\/head>/i.test(stripped)) {
-    stripped = stripped.replace(/<body/i, '</head>\n<body')
-  }
-
-  // If body tag is now missing (was consumed as "CSS text"), recover it from after </head>
-  if (!/<body[\s>]/i.test(stripped)) {
-    const headEnd = stripped.search(/<\/head>/i)
-    if (headEnd !== -1) {
-      const head = stripped.slice(0, headEnd + 7)
-      const rest = stripped.slice(headEnd + 7).trim()
-      stripped = head + '\n<body>\n' + rest + (rest.includes('</body>') ? '' : '\n</body>') + (rest.includes('</html>') ? '' : '\n</html>')
-    }
-  }
-
-  // ── Extract all <script> blocks before further stripping ──────────────────
-  const scriptChunks = []
-  const scriptRe = /<script[^>]*>([\s\S]*?)(?:<\/script>|$)/gi
-  let s
-  while ((s = scriptRe.exec(stripped)) !== null) {
-    if (s[1].trim()) scriptChunks.push(s[1])
-  }
-  // Catch any unclosed trailing <script> tag
-  const lastScriptOpen  = stripped.lastIndexOf('<script')
-  const lastScriptClose = stripped.lastIndexOf('</script>')
-  if (lastScriptOpen > lastScriptClose) {
-    const trailingJs = stripped.slice(stripped.indexOf('>', lastScriptOpen) + 1)
-    if (trailingJs.trim()) scriptChunks.push(trailingJs)
-  }
-  // Strip all <script> blocks (closed and unclosed)
-  stripped = stripped
-    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-    .replace(/<script[^>]*>[\s\S]*/i, '')
-
-  // Re-inject the combined CSS as a single clean <style> block in <head>
-  const cleanStyle = `<style>\n${combinedCss}\n</style>`
-  let rebuilt = stripped.replace(/<\/head>/i, cleanStyle + '\n</head>')
-  console.log('[SF-SERVER] rebuilt HTML style block preview:', rebuilt.substring(rebuilt.indexOf('<style>'), rebuilt.indexOf('<style>') + 200))
-
-  // Re-inject all scripts as one clean <script> block before </body>
-  if (scriptChunks.length) {
-    const cleanScript = `<script>\n${scriptChunks.join('\n')}\n</script>`
-    rebuilt = rebuilt.replace(/<\/body>/i, cleanScript + '\n</body>')
-  }
-
-  console.log('[SF-SERVER] sanitized — body present:', /<body[\s>]/i.test(rebuilt), 'scripts:', scriptChunks.length, 'html closes:', rebuilt.trimEnd().toLowerCase().endsWith('</html>'))
-  return rebuilt
+  return html
 }
 
 // ── Website generation ────────────────────────────────────────────────────────
@@ -268,8 +193,8 @@ OUTPUT: Start with <!DOCTYPE html>, end with </html>. No markdown, no code fence
     html = html + '\n</body></html>'
   }
 
-  // Fix unclosed/mismatched style blocks that cause body to parse as CSS text
-  html = sanitizeHtml(html)
+  // Fix unclosed style blocks that cause body content to parse as CSS text
+  html = ensureClosedStyles(html)
 
   if (photoBase64) {
     html = html.replace(
