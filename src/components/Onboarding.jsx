@@ -43,28 +43,20 @@ export default function Onboarding({ onClose, onComplete, user }) {
   const [genProgress, setGenProgress] = useState(0)
   const [genMsgIdx, setGenMsgIdx]     = useState(0)
   const [generatedHtml, setGeneratedHtml] = useState(null)
-  const [previewUrl, setPreviewUrl]     = useState(null)
-  const [genError, setGenError]         = useState(null)
-  const [genRetryMsg, setGenRetryMsg]   = useState(null)
-  const [countdown, setCountdown]       = useState(14 * 60 + 59)
+  const [genError, setGenError]           = useState(null)
+  const [genRetryMsg, setGenRetryMsg]     = useState(null)
+  const [countdown, setCountdown]         = useState(14 * 60 + 59)
   const [checkoutLoading, setCheckoutLoading] = useState(false)
   const [checkoutError, setCheckoutError]     = useState(null)
-  const cancelledRef  = useRef(false)
-  const previewUrlRef = useRef(null)
+  const cancelledRef = useRef(false)
+  const iframeRef    = useRef(null)
 
-  // Create a blob URL whenever generatedHtml changes; revoke the previous one
+  // Set srcdoc directly on the DOM element after mount to avoid React timing issues
   useEffect(() => {
-    if (!generatedHtml) return
-    const blob = new Blob([generatedHtml], { type: 'text/html' })
-    const url  = URL.createObjectURL(blob)
-    console.log('[SF] blob URL created:', url)
-    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current)
-    previewUrlRef.current = url
-    setPreviewUrl(url)
-    return () => {
-      URL.revokeObjectURL(url)
-      previewUrlRef.current = null
-    }
+    if (!generatedHtml || !iframeRef.current) return
+    console.log('[SF] Setting srcdoc, length:', generatedHtml?.length, 'type:', typeof generatedHtml)
+    iframeRef.current.srcdoc = generatedHtml
+    console.log('[SF] srcdoc set directly on iframe element')
   }, [generatedHtml])
 
   useEffect(() => {
@@ -233,11 +225,10 @@ export default function Onboarding({ onClose, onComplete, user }) {
           </div>
           <p className="ob-preview-subtitle">Here's your new website. Scroll through and see how it looks.</p>
           <iframe
-            key="test-iframe"
+            ref={iframeRef}
             className="ob-preview-iframe ob-fadein"
-            srcDoc='<html><body style="background:red;color:white;font-size:40px;padding:40px">IFRAME WORKS</body></html>'
             title="Your generated website"
-            onLoad={() => console.log('[SF] iframe onLoad fired, src:', previewUrl)}
+            onLoad={() => console.log('[SF] iframe onLoad fired')}
             onError={(e) => console.log('[SF] iframe onError:', e)}
           />
         </div>
