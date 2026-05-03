@@ -139,16 +139,22 @@ function sanitizeHtml(html) {
   }
 
   const combinedCss = cssChunks.join('\n')
+  console.log('[SF-SERVER] CSS extracted length:', combinedCss.length)
 
-  // Remove all <style>...</style> blocks (and any unclosed trailing style content)
-  let stripped = html
-    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-    // Remove any remaining unclosed <style ...> and everything after it up to <body or </head
-    .replace(/<style[^>]*>[\s\S]*/i, '')
+  // Remove closed <style>...</style> blocks first
+  let stripped = html.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+  // Remove any remaining unclosed <style> tag — but only up to </head> or <body, not the whole document
+  stripped = stripped.replace(/<style[^>]*>[\s\S]*?(?=<\/head>|<body)/i, '')
+  // If still has an unclosed <style> with no head/body boundary, remove it and preserve what follows
+  stripped = stripped.replace(/<style[^>]*>[^<]*/gi, '')
 
-  // If body tag is now missing (was consumed as "CSS text"), try to recover body from stripped
+  // Ensure </head> exists so re-injection has a target; insert before <body if missing
+  if (!/<\/head>/i.test(stripped)) {
+    stripped = stripped.replace(/<body/i, '</head>\n<body')
+  }
+
+  // If body tag is now missing (was consumed as "CSS text"), recover it from after </head>
   if (!/<body[\s>]/i.test(stripped)) {
-    // Everything after </head> or after the removed style section is the body content
     const headEnd = stripped.search(/<\/head>/i)
     if (headEnd !== -1) {
       const head = stripped.slice(0, headEnd + 7)
@@ -179,6 +185,7 @@ function sanitizeHtml(html) {
   // Re-inject the combined CSS as a single clean <style> block in <head>
   const cleanStyle = `<style>\n${combinedCss}\n</style>`
   let rebuilt = stripped.replace(/<\/head>/i, cleanStyle + '\n</head>')
+  console.log('[SF-SERVER] rebuilt HTML style block preview:', rebuilt.substring(rebuilt.indexOf('<style>'), rebuilt.indexOf('<style>') + 200))
 
   // Re-inject all scripts as one clean <script> block before </body>
   if (scriptChunks.length) {

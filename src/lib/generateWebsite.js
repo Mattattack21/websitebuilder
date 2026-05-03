@@ -121,6 +121,9 @@ export async function generateWebsite(params, user, onProgress, onRetry) {
 
     clearInterval(ticker)
 
+    console.log('[SF] style tags in HTML:', (rawHtml.match(/<style/g)||[]).length)
+    console.log('[SF] style content length:', rawHtml.match(/<style>([\s\S]*?)<\/style>/)?.[1]?.length ?? 0)
+
     const html = injectLeadScript(rawHtml, user?.id ?? null)
 
     if (user) {
