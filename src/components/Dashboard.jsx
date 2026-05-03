@@ -214,6 +214,7 @@ export default function Dashboard({ user, generatedHtml, regenerating, onSiteUpd
                   key={siteHtml}
                   srcDoc={siteHtml}
                   title="Your website preview"
+                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
                 />
               </div>
             ) : regenerating ? (
