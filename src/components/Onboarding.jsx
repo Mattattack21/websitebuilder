@@ -57,6 +57,7 @@ export default function Onboarding({ onClose, onComplete, user }) {
     if (!generatedHtml) return
     const blob = new Blob([generatedHtml], { type: 'text/html' })
     const url  = URL.createObjectURL(blob)
+    console.log('[SF] blob URL created:', url)
     if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current)
     previewUrlRef.current = url
     setPreviewUrl(url)
@@ -232,10 +233,12 @@ export default function Onboarding({ onClose, onComplete, user }) {
           </div>
           <p className="ob-preview-subtitle">Here's your new website. Scroll through and see how it looks.</p>
           <iframe
-            key={previewUrl}
+            key="test-iframe"
             className="ob-preview-iframe ob-fadein"
-            src={previewUrl}
+            srcDoc='<html><body style="background:red;color:white;font-size:40px;padding:40px">IFRAME WORKS</body></html>'
             title="Your generated website"
+            onLoad={() => console.log('[SF] iframe onLoad fired, src:', previewUrl)}
+            onError={(e) => console.log('[SF] iframe onError:', e)}
           />
         </div>
       </div>
