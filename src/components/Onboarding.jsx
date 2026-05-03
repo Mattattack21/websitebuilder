@@ -57,6 +57,12 @@ export default function Onboarding({ onClose, onComplete, user }) {
     console.log('[SF] Setting srcdoc, length:', generatedHtml?.length, 'type:', typeof generatedHtml)
     iframeRef.current.srcdoc = generatedHtml
     console.log('[SF] srcdoc set directly on iframe element')
+    setTimeout(() => {
+      const doc = iframeRef.current?.contentDocument
+      console.log('[SF] iframe body innerHTML length:', doc?.body?.innerHTML?.length)
+      console.log('[SF] iframe body background:', doc?.body?.style?.background)
+      console.log('[SF] iframe children count:', doc?.body?.children?.length)
+    }, 1000)
   }, [generatedHtml])
 
   useEffect(() => {
