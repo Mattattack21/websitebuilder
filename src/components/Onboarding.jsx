@@ -78,12 +78,14 @@ export default function Onboarding({ onClose, onComplete, user }) {
     )
       .then(html => {
         if (cancelledRef.current) return
+        console.log('[SF] Generation complete. HTML length:', html?.length ?? 0)
+        console.log('[SF] HTML starts with:', html?.slice(0, 100) ?? 'NULL')
         setGeneratedHtml(html)
         setStep(4)
       })
       .catch(err => {
         if (cancelledRef.current) return
-        console.error('Generation failed:', err)
+        console.error('[SF] Generation failed:', err)
         setGenError(err?.message ?? 'Something went wrong. Please try again.')
       })
 
@@ -183,6 +185,10 @@ export default function Onboarding({ onClose, onComplete, user }) {
 
   // ── Step 4: Preview ───────────────────────────────────────────────────────
   if (step === 4) {
+    console.log('[SF] Preview step reached')
+    console.log('[SF] generatedHtml type:', typeof generatedHtml)
+    console.log('[SF] generatedHtml length:', generatedHtml?.length ?? 0)
+    console.log('[SF] generatedHtml preview:', generatedHtml?.slice(0, 200) ?? 'NULL/EMPTY')
     return (
       <div className="ob-overlay">
         <div className="ob-preview-wrap">

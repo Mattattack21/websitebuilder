@@ -74,16 +74,21 @@ function injectLeadScript(html, userId) {
 
 // ── Shared fetch helper ───────────────────────────────────────────────────────
 async function callGenerate(payload) {
+  console.log('[SF] callGenerate start, type:', payload.type)
   const res = await fetch('/.netlify/functions/generate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   })
+  console.log('[SF] fetch response status:', res.status, res.ok)
   if (!res.ok) {
     const data = await res.json().catch(() => ({}))
+    console.error('[SF] fetch error body:', data)
     throw new Error(data.error ?? 'Generation failed')
   }
-  return res.json()
+  const json = await res.json()
+  console.log('[SF] response html length:', json.html?.length ?? 0)
+  return json
 }
 
 // ── Full website generation ───────────────────────────────────────────────────
@@ -105,8 +110,8 @@ export async function generateWebsite(params, user, onProgress, onRetry) {
     let rawHtml
     try {
       rawHtml = await attempt()
-    } catch {
-      // Retry once — reset progress and notify the UI
+    } catch (firstErr) {
+      console.warn('[SF] First attempt failed, retrying. Error:', firstErr?.message)
       onRetry?.()
       fakeProgress = 5
       onProgress?.(5)
