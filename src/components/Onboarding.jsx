@@ -223,15 +223,6 @@ export default function Onboarding({ onClose, onComplete, user }) {
               <button
                 className="ob-btn-changetheme"
                 onClick={() => {
-                  const url = URL.createObjectURL(new Blob([generatedHtml], { type: 'text/html' }))
-                  window.open(url)
-                }}
-              >
-                Open in Tab
-              </button>
-              <button
-                className="ob-btn-changetheme"
-                onClick={() => {
                   setVibe(null)
                   setGeneratedHtml(null)
                   setGenProgress(0)
@@ -251,7 +242,6 @@ export default function Onboarding({ onClose, onComplete, user }) {
             ref={iframeRef}
             className="ob-preview-iframe"
             title="Your generated website"
-            style={{ border: '5px solid red', width: '100%', height: '70vh', minHeight: '500px', display: 'block' }}
             onLoad={() => console.log('[SF] iframe onLoad fired')}
             onError={(e) => console.log('[SF] iframe onError:', e)}
           />
