@@ -7,52 +7,76 @@ const CORS = {
   'Access-Control-Allow-Headers': 'Content-Type',
 }
 
-const THEME_GUIDES = {
+const THEMES = {
   trustworthy: {
-    label: 'Trustworthy',
-    css: `
-COLORS: background #ffffff, primary navy #1B3A6B, accent blue #2563eb, text #1e293b, headings #0f172a, section-bg #f8fafc.
-FONTS: Georgia, 'Times New Roman', serif for headings (bold, authoritative); system-ui for body text.
-STYLE: Clean professional layout. Large hero with business name in bold serif. Subtle box-shadows (0 4px 16px rgba(0,0,0,0.08)). Rounded corners 8px. Grid layout for service cards. Generous whitespace. Navy CTA buttons that turn slightly lighter on hover.
-TRUST BADGES: Include a "Why Choose Us" row with 3 badges: "✓ Licensed & Insured", "⭐ 5-Star Rated", "💰 Free Estimates" — styled as pill badges in navy with white text.
-HERO: Deep navy gradient background (linear-gradient(135deg, #1B3A6B 0%, #2563eb 100%)), white headline text, white subheadline, two white-outlined CTA buttons.
-TONE: Professional and reassuring. Words like "trusted", "reliable", "certified", "expert", "professional".`,
+    bg:'#f8fafc', primary:'#1B3A6B', accent:'#2563eb',
+    text:'#1e293b', heading:'#0f172a',
+    heroGradient:'linear-gradient(135deg,#1B3A6B 0%,#2563eb 100%)',
+    heroText:'#fff', heroSub:'rgba(255,255,255,0.85)',
+    outlineBtn:'border:2px solid rgba(255,255,255,0.7);color:#fff;background:transparent',
+    navBg:'rgba(255,255,255,0.97)', navText:'#1B3A6B',
+    cardBg:'#fff', cardShadow:'0 4px 24px rgba(0,0,0,0.08)',
+    sectionAlt:'#f1f5f9', footerBg:'#0f172a',
+    inputBorder:'#cbd5e1', inputBg:'#fff',
+    btn:'background:linear-gradient(135deg,#1B3A6B,#2563eb);color:#fff',
+    trustBg:'#1B3A6B',
+    headingFont:"Georgia,'Times New Roman',serif",
   },
   bold: {
-    label: 'Bold',
-    css: `
-COLORS: background #000000 (pure black), primary red #FF0000, accent white #ffffff, text #f5f5f5, headings #ffffff, card-bg #111111.
-FONTS: system-ui with weight 900 for headings (massive, full-width). Clean sans-serif body.
-STYLE: Full-width sections edge to edge. Giant typography — hero headline font-size min 64px. Pure black background throughout. Red CTA buttons with white text. Cards with 1px red border. Minimal decoration, maximum impact. Hover effects that turn red.
-HERO: Black background, giant white headline taking up most of the hero, red accent line under it, bold red CTA button.
-TONE: Aggressive and confident. Words like "dominate", "results", "powerful", "get it done", "no excuses".`,
+    bg:'#000', primary:'#FF0000', accent:'#FF0000',
+    text:'#f5f5f5', heading:'#fff',
+    heroGradient:'#000',
+    heroText:'#fff', heroSub:'rgba(255,255,255,0.65)',
+    outlineBtn:'border:2px solid #FF0000;color:#FF0000;background:transparent',
+    navBg:'rgba(0,0,0,0.97)', navText:'#FF0000',
+    cardBg:'#111', cardShadow:'0 4px 24px rgba(255,0,0,0.12)',
+    sectionAlt:'#0a0a0a', footerBg:'#111',
+    inputBorder:'#333', inputBg:'#111',
+    btn:'background:#FF0000;color:#fff',
+    trustBg:'#FF0000',
+    headingFont:'-apple-system,BlinkMacSystemFont,sans-serif',
   },
   warm: {
-    label: 'Cute & Warm',
-    css: `
-COLORS: background #FFFDD0 (cream), primary pink #FFB6C1, accent #FF69B4 (hot pink), text #5c2d3a, headings #3d1a24, card-bg #fff0f3.
-FONTS: system-ui with slightly rounded feel; body font-size 16px; warm friendly sizes.
-STYLE: Rounded corners 20px on EVERYTHING — buttons, cards, inputs, sections. Soft pink box-shadows. Decorative heart (♥) and flower (✿) CSS elements in section headers. Pastel service cards with pink gradient backgrounds. Inputs with thick pink border on focus.
-HERO: Soft pink-to-cream gradient (linear-gradient(135deg, #FFB6C1 0%, #FFFDD0 100%)), warm headline, decorative hearts.
-TONE: Warm and personal. Words like "we love what we do", "caring", "friendly", "here for you", "our family serving yours".`,
+    bg:'#FFFDD0', primary:'#FF69B4', accent:'#FF69B4',
+    text:'#5c2d3a', heading:'#3d1a24',
+    heroGradient:'linear-gradient(135deg,#FFB6C1 0%,#FFFDD0 100%)',
+    heroText:'#3d1a24', heroSub:'rgba(92,45,58,0.72)',
+    outlineBtn:'border:2px solid #FF69B4;color:#3d1a24;background:transparent',
+    navBg:'rgba(255,253,208,0.97)', navText:'#3d1a24',
+    cardBg:'#fff0f3', cardShadow:'0 4px 24px rgba(255,105,180,0.12)',
+    sectionAlt:'#fff5f7', footerBg:'#3d1a24',
+    inputBorder:'#FFB6C1', inputBg:'#fff',
+    btn:'background:linear-gradient(135deg,#FF69B4,#FFB6C1);color:#fff',
+    trustBg:'#FF69B4',
+    headingFont:'-apple-system,BlinkMacSystemFont,sans-serif',
   },
   exciting: {
-    label: 'Exciting',
-    css: `
-COLORS: primary orange #FF6B35, accent yellow #FFE134, background #fff8f0, text #1a0a00, headings #cc3d00, card-bg #ffffff.
-FONTS: system-ui weight 800-900 for headings. Bold and energetic throughout.
-STYLE: Vibrant animated gradient hero using CSS @keyframes (animate the background-position of a orange-to-yellow gradient). Rounded cards with orange-to-yellow gradient border. Bold CTAs with gradient background. Section dividers as diagonal CSS shapes using clip-path. High energy layout.
-HERO: Animated gradient (keyframes shifting orange→yellow→orange), large white headline, bright yellow CTA button with orange text.
-TONE: Enthusiastic. Words like "amazing", "let's go", "we bring the energy", "get started today", "you deserve the best".`,
+    bg:'#fff8f0', primary:'#FF6B35', accent:'#FF6B35',
+    text:'#1a0a00', heading:'#cc3d00',
+    heroGradient:'linear-gradient(135deg,#FF6B35 0%,#FFE134 100%)',
+    heroText:'#fff', heroSub:'rgba(255,255,255,0.9)',
+    outlineBtn:'border:2px solid rgba(255,255,255,0.8);color:#fff;background:transparent',
+    navBg:'rgba(255,248,240,0.97)', navText:'#FF6B35',
+    cardBg:'#fff', cardShadow:'0 4px 24px rgba(255,107,53,0.12)',
+    sectionAlt:'#fff3e8', footerBg:'#1a0a00',
+    inputBorder:'#ffd5b8', inputBg:'#fff',
+    btn:'background:linear-gradient(135deg,#FF6B35,#FFE134);color:#1a0a00',
+    trustBg:'#FF6B35',
+    headingFont:'-apple-system,BlinkMacSystemFont,sans-serif',
   },
   elegant: {
-    label: 'Elegant',
-    css: `
-COLORS: background #1A1A1A (deep black), primary gold #C9A84C, accent #e8d5a3 (light gold), text #d4c9b8, headings #ffffff, section-bg #141414.
-FONTS: Georgia, 'Times New Roman', serif for ALL headings. system-ui for body. Letter-spacing 2-3px on section labels (uppercase).
-STYLE: Fine 1px gold borders on cards and sections. Generous padding (80px+ sections). Thin gold horizontal rules as dividers. Subtle gold box-shadow on cards. Uppercase section labels with wide letter-spacing. Hover effects that glow gold.
-HERO: Near-black background with a very subtle gold radial gradient glow, large white serif headline, gold CTA button.
-TONE: Refined and exclusive. Words like "premier", "bespoke", "distinguished", "artisan", "curated", "where excellence meets craft".`,
+    bg:'#1A1A1A', primary:'#C9A84C', accent:'#C9A84C',
+    text:'#d4c9b8', heading:'#fff',
+    heroGradient:'radial-gradient(ellipse at center,#2a2a2a 0%,#141414 100%)',
+    heroText:'#fff', heroSub:'rgba(212,201,184,0.75)',
+    outlineBtn:'border:1px solid #C9A84C;color:#C9A84C;background:transparent',
+    navBg:'rgba(20,20,20,0.97)', navText:'#C9A84C',
+    cardBg:'#242424', cardShadow:'0 4px 24px rgba(201,168,76,0.08)',
+    sectionAlt:'#141414', footerBg:'#0a0a0a',
+    inputBorder:'#3a3a3a', inputBg:'#242424',
+    btn:'background:linear-gradient(135deg,#C9A84C,#e8d5a3);color:#1A1A1A',
+    trustBg:'#C9A84C',
+    headingFont:"Georgia,'Times New Roman',serif",
   },
 }
 
@@ -107,6 +131,164 @@ function ok(data) {
   }
 }
 
+// ── Phase 1: Sonnet generates content JSON (fast, small output) ───────────────
+
+async function generateContentJson({ businessName, businessType, city, state, businessDescription }) {
+  const prompt = `Generate website content for this business as JSON. Output valid JSON only — no explanation, no markdown, no code fences.
+
+Business: ${businessName}, a ${businessType} in ${city}, ${state}${businessDescription ? `. ${businessDescription}` : ''}.
+
+Return exactly this JSON structure:
+{
+  "tagline": "compelling 6-10 word hero headline",
+  "subheadline": "1-2 sentence value proposition for the hero",
+  "about": "2-3 sentences about the business, its history and values",
+  "services": [
+    {"icon": "emoji", "name": "Service Name", "desc": "One sentence description"},
+    {"icon": "emoji", "name": "Service Name", "desc": "One sentence description"},
+    {"icon": "emoji", "name": "Service Name", "desc": "One sentence description"}
+  ],
+  "stats": ["10+ Years Experience", "500+ Happy Clients", "5★ Rated"],
+  "cta": "Short action phrase e.g. Get a Free Quote"
+}`
+
+  const message = await client.messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 800,
+    messages: [{ role: 'user', content: prompt }],
+  })
+
+  const raw = message.content[0].text.trim()
+  console.log('[SF-SERVER] Phase 1 JSON:', raw.substring(0, 300))
+  const match = raw.match(/\{[\s\S]*\}/)
+  return JSON.parse(match ? match[0] : raw)
+}
+
+// ── Phase 2: Render content into hardcoded beautiful template ─────────────────
+
+function buildPage(t, data, p) {
+  const {
+    businessName, phone, email, businessHours, address,
+    facebook, instagram, photoBase64, photoMimeType, telDigits,
+  } = p
+  const { tagline, subheadline, about, services, stats, cta } = data
+  const year = new Date().getFullYear()
+
+  const photoHtml = photoBase64
+    ? `<img src="data:${photoMimeType || 'image/jpeg'};base64,${photoBase64}" alt="${businessName}" style="width:100%;max-width:500px;border-radius:16px;display:block">`
+    : ''
+
+  const statsHtml = `<div style="display:flex;gap:20px;flex-wrap:wrap">
+    ${stats.map(s => `<div style="flex:1;min-width:110px;text-align:center;background:${t.cardBg};border-radius:14px;padding:28px 16px;box-shadow:${t.cardShadow}">
+      <div style="font-size:20px;font-weight:900;color:${t.accent};line-height:1.3">${s}</div>
+    </div>`).join('')}
+  </div>`
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>${businessName}</title>
+</head>
+<body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:${t.bg};color:${t.text}">
+
+<nav style="position:fixed;top:0;left:0;right:0;z-index:1000;background:${t.navBg};backdrop-filter:blur(12px);box-shadow:0 1px 20px rgba(0,0,0,0.08);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:68px">
+  <span style="font-size:20px;font-weight:800;color:${t.navText};letter-spacing:-0.5px">${businessName}</span>
+  ${phone ? `<a href="tel:${telDigits}" style="${t.btn};padding:10px 22px;border-radius:999px;font-weight:700;font-size:14px;text-decoration:none;display:inline-block">${phone}</a>` : ''}
+</nav>
+
+<section style="min-height:90vh;background:${t.heroGradient};display:flex;align-items:center;justify-content:center;text-align:center;padding:120px 24px 80px">
+  <div style="max-width:840px;width:100%">
+    <h1 style="font-family:${t.headingFont};font-size:clamp(38px,6vw,76px);font-weight:900;color:${t.heroText};margin:0 0 24px;line-height:1.08;letter-spacing:-1px">${tagline}</h1>
+    <p style="font-size:clamp(17px,2vw,22px);color:${t.heroSub};margin:0 auto 44px;line-height:1.65;max-width:620px">${subheadline}</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+      <a href="#contact" style="${t.btn};padding:18px 36px;border-radius:10px;font-size:18px;font-weight:700;text-decoration:none;display:inline-block">${cta}</a>
+      ${phone ? `<a href="tel:${telDigits}" style="${t.outlineBtn};padding:18px 36px;border-radius:10px;font-size:18px;font-weight:700;text-decoration:none;display:inline-block">📞 Call Now</a>` : ''}
+    </div>
+  </div>
+</section>
+
+<div style="background:${t.trustBg};padding:18px 24px">
+  <div style="max-width:900px;margin:0 auto;display:flex;justify-content:center;gap:40px;flex-wrap:wrap">
+    <span style="color:#fff;font-weight:600;font-size:14px">✓ Licensed &amp; Insured</span>
+    <span style="color:#fff;font-weight:600;font-size:14px">⭐ 5-Star Rated</span>
+    <span style="color:#fff;font-weight:600;font-size:14px">💰 Free Estimates</span>
+  </div>
+</div>
+
+<section style="padding:96px 24px;background:${t.bg}">
+  <div style="max-width:1100px;margin:0 auto;display:flex;gap:64px;align-items:center;flex-wrap:wrap">
+    <div style="flex:1.2;min-width:280px">
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px">
+        <div style="width:5px;height:52px;background:${t.accent};border-radius:3px;flex-shrink:0"></div>
+        <h2 style="font-family:${t.headingFont};font-size:clamp(28px,3vw,42px);font-weight:800;color:${t.heading};margin:0">About Us</h2>
+      </div>
+      <p style="font-size:17px;line-height:1.85;color:${t.text};margin:0">${about}</p>
+    </div>
+    <div style="flex:1;min-width:260px">${photoBase64 ? photoHtml : statsHtml}</div>
+  </div>
+</section>
+
+<section style="padding:96px 24px;background:${t.sectionAlt}">
+  <div style="max-width:1100px;margin:0 auto">
+    <h2 style="font-family:${t.headingFont};font-size:clamp(28px,3vw,42px);font-weight:800;color:${t.heading};text-align:center;margin:0 0 56px">Our Services</h2>
+    <div style="display:flex;gap:28px;flex-wrap:wrap;justify-content:center">
+      ${services.map(s => `<div style="background:${t.cardBg};border-radius:18px;padding:40px 32px;flex:1;min-width:240px;max-width:320px;box-shadow:${t.cardShadow};text-align:center">
+        <div style="font-size:52px;margin-bottom:20px;line-height:1">${s.icon}</div>
+        <h3 style="font-size:20px;font-weight:800;color:${t.heading};margin:0 0 14px">${s.name}</h3>
+        <p style="color:${t.text};line-height:1.7;margin:0;font-size:15px">${s.desc}</p>
+      </div>`).join('')}
+    </div>
+  </div>
+</section>
+
+<section id="contact" style="padding:96px 24px;background:${t.bg}">
+  <div style="max-width:600px;margin:0 auto">
+    <h2 style="font-family:${t.headingFont};font-size:clamp(28px,3vw,42px);font-weight:800;color:${t.heading};text-align:center;margin:0 0 12px">Get In Touch</h2>
+    <p style="text-align:center;color:${t.text};margin:0 0 40px;font-size:17px;opacity:0.75">${businessHours ? 'Hours: ' + businessHours : "Fill out the form and we'll get back to you shortly."}</p>
+    ${address ? `<p style="text-align:center;color:${t.text};margin:-20px 0 32px;font-size:14px;opacity:0.65">📍 ${address}</p>` : ''}
+    <form id="contact-form">
+      <input name="name" placeholder="Your Name" required style="width:100%;box-sizing:border-box;padding:15px 18px;border-radius:10px;border:2px solid ${t.inputBorder};font-size:16px;margin-bottom:16px;background:${t.inputBg};color:${t.text};display:block;font-family:inherit">
+      <input name="phone" placeholder="Phone Number" style="width:100%;box-sizing:border-box;padding:15px 18px;border-radius:10px;border:2px solid ${t.inputBorder};font-size:16px;margin-bottom:16px;background:${t.inputBg};color:${t.text};display:block;font-family:inherit">
+      <input name="email" type="email" placeholder="Email Address" style="width:100%;box-sizing:border-box;padding:15px 18px;border-radius:10px;border:2px solid ${t.inputBorder};font-size:16px;margin-bottom:16px;background:${t.inputBg};color:${t.text};display:block;font-family:inherit">
+      <textarea name="message" placeholder="How can we help you?" rows="5" style="width:100%;box-sizing:border-box;padding:15px 18px;border-radius:10px;border:2px solid ${t.inputBorder};font-size:16px;margin-bottom:28px;background:${t.inputBg};color:${t.text};display:block;resize:vertical;font-family:inherit"></textarea>
+      <button type="submit" style="${t.btn};width:100%;padding:20px;border-radius:10px;font-size:18px;font-weight:700;border:none;cursor:pointer;display:block;font-family:inherit">Send Message →</button>
+    </form>
+  </div>
+</section>
+
+<footer style="background:${t.footerBg};color:rgba(255,255,255,0.7);padding:60px 24px;text-align:center">
+  <div style="max-width:800px;margin:0 auto">
+    <div style="font-size:24px;font-weight:800;color:#fff;margin-bottom:20px">${businessName}</div>
+    <div style="display:flex;justify-content:center;gap:28px;flex-wrap:wrap;margin-bottom:16px">
+      ${phone ? `<a href="tel:${telDigits}" style="color:rgba(255,255,255,0.7);text-decoration:none">${phone}</a>` : ''}
+      ${email ? `<a href="mailto:${email}" style="color:rgba(255,255,255,0.7);text-decoration:none">${email}</a>` : ''}
+    </div>
+    ${address ? `<div style="font-size:14px;margin-bottom:16px;opacity:0.55">📍 ${address}</div>` : ''}
+    ${(facebook || instagram) ? `<div style="display:flex;justify-content:center;gap:20px;margin-bottom:20px">
+      ${facebook ? `<a href="${facebook}" style="color:rgba(255,255,255,0.55);text-decoration:none;font-size:14px">Facebook</a>` : ''}
+      ${instagram ? `<a href="${instagram}" style="color:rgba(255,255,255,0.55);text-decoration:none;font-size:14px">Instagram</a>` : ''}
+    </div>` : ''}
+    <div style="font-size:13px;opacity:0.35;border-top:1px solid rgba(255,255,255,0.08);padding-top:24px;margin-top:8px">&copy; ${year} ${businessName}. All rights reserved.</div>
+  </div>
+</footer>
+
+${phone ? `<a href="tel:${telDigits}" style="position:fixed;bottom:28px;right:28px;${t.btn};padding:15px 26px;border-radius:999px;font-size:15px;font-weight:700;text-decoration:none;display:inline-block;box-shadow:0 6px 24px rgba(0,0,0,0.25);z-index:999">📞 Call Now</a>` : ''}
+
+<script>
+(function(){
+  var f=document.getElementById('contact-form');
+  if(!f)return;
+  f.addEventListener('submit',function(e){
+    e.preventDefault();
+    f.innerHTML='<div style="padding:48px;text-align:center;font-size:20px;font-weight:700;">Thanks! We’ll be in touch soon. ✅<\/div>';
+  });
+}());
+<\/script>
+<\/body>
+<\/html>`
+}
 
 // ── Website generation ────────────────────────────────────────────────────────
 
@@ -115,77 +297,16 @@ async function handleGenerateWebsite({
   themeVibe, phone, email, businessHours, address, facebook, instagram,
   photoBase64, photoMimeType,
 }) {
-  const theme = THEME_GUIDES[themeVibe] ?? THEME_GUIDES.trustworthy
+  const t = THEMES[themeVibe] ?? THEMES.trustworthy
   const telDigits = phone ? phone.replace(/\D/g, '') : '5550000000'
 
-  const contactBlock = [
-    phone         ? `- Phone: ${phone}`                        : null,
-    email         ? `- Email: ${email}`                        : null,
-    businessHours ? `- Business Hours: ${businessHours}`       : null,
-    address       ? `- Address / Service Area: ${address}`     : null,
-    facebook      ? `- Facebook: ${facebook}`                  : null,
-    instagram     ? `- Instagram: ${instagram}`                : null,
-  ].filter(Boolean).join('\n')
+  const data = await generateContentJson({ businessName, businessType, city, state, businessDescription })
 
-  const prompt = `Build a complete, professional single-page business website using ONLY inline styles. Do NOT use a <style> block or CSS classes. Every style must be written directly on the element as a style attribute, e.g. <div style="background: #1B3A6B; color: white; padding: 80px 40px;">.
-
-BUSINESS: ${businessName} | ${businessType} | ${city}, ${state}${businessDescription ? ` | ${businessDescription}` : ''}
-${contactBlock || ''}
-THEME — "${theme.label}":
-${theme.css}
-
-FONTS: Use style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" on body. Use style="font-family: Georgia, serif" on hero headline.
-
-SECTIONS (all required — style every element with inline styles):
-1. NAV: position:fixed; top:0; left:0; right:0; z-index:1000, name left, phone pill-button right (tel:${telDigits}), semi-transparent background, box-shadow.
-2. HERO: min-height:85vh, theme gradient background, large bold headline (font-family:Georgia,serif; font-size:60px), subheadline, two buttons (solid + outline), centered with display:flex; align-items:center; justify-content:center; flex-direction:column; text-align:center.
-3. ABOUT: display:flex; gap:40px on desktop wrapper, accent bar (width:4px; height:40px inline block) before heading, 2-sentence copy, 3 trust stats side by side.
-4. SERVICES: display:flex; flex-wrap:wrap; gap:24px wrapper, 3 cards each with emoji icon (font-size:40px), bold title, 1-sentence description, border-radius:12px, box-shadow:0 4px 16px rgba(0,0,0,0.1), padding:32px.
-5. CONTACT FORM (NEVER OMIT): id="contact-form", fields name="name" name="phone" name="email" name="message", every input styled inline (padding:12px 16px; border-radius:8px; border:2px solid #ccc; width:100%; display:block; margin-bottom:16px), full-width submit button with gradient background.${businessHours ? ` Hours: ${businessHours}.` : ''}${address ? ` Address: ${address}.` : ''}
-6. FOOTER: background:#111; color:#fff; padding:40px; text-align:center, name + copyright "© ${new Date().getFullYear()} ${businessName}", phone, email.
-7. FIXED BUTTON: position:fixed; bottom:24px; right:24px; "📞 Call Now" → tel:${telDigits}, theme color background, border-radius:999px, box-shadow, padding:14px 24px; color:#fff; font-weight:700; text-decoration:none; display:inline-block.${photoBase64 ? `\n8. PHOTO: src="__BUSINESS_PHOTO__" style="border-radius:12px; max-width:100%; height:auto" in hero or about.` : ''}
-
-JS RULES: only addEventListener/querySelector, one <script> before </body>, no eval/new Function.
-
-OUTPUT: Start with <!DOCTYPE html>, end with </html>. No markdown, no code fences, no extra text. No <style> blocks whatsoever.`
-
-  const messageContent = [{ type: 'text', text: prompt }]
-  if (photoBase64) {
-    messageContent.push({
-      type: 'image',
-      source: { type: 'base64', media_type: photoMimeType || 'image/jpeg', data: photoBase64 },
-    })
-  }
-
-  const message = await client.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 6000,
-    messages: [{ role: 'user', content: messageContent }],
+  return buildPage(t, data, {
+    businessName, businessType, city, state,
+    phone, email, businessHours, address, facebook, instagram,
+    photoBase64, photoMimeType, telDigits,
   })
-
-  let raw = message.content[0].text.trim()
-  console.log('[SF-SERVER] raw first 500:', raw.substring(0, 500))
-
-  // Strip code fences if Claude wrapped the output
-  raw = raw.replace(/^```[\w]*\s*/i, '').replace(/\s*```\s*$/i, '').trim()
-  // Extract the HTML document — grab from <!DOCTYPE html> to </html>, discarding any preamble
-  const docMatch = raw.match(/<!doctype\s+html[\s\S]*<\/html>/i)
-  let html = docMatch ? docMatch[0] : raw
-
-  // Truncation recovery: if max_tokens cut the response short, close any open document
-  if (!html.trimEnd().toLowerCase().endsWith('</html>')) {
-    console.warn('[SF-SERVER] HTML appears truncated — patching close tags')
-    html = html + '\n</body></html>'
-  }
-
-  if (photoBase64) {
-    html = html.replace(
-      'src="__BUSINESS_PHOTO__"',
-      `src="data:${photoMimeType || 'image/jpeg'};base64,${photoBase64}"`
-    )
-  }
-
-  return html
 }
 
 // ── Content update ────────────────────────────────────────────────────────────
@@ -209,10 +330,10 @@ Requirements:
     messages: [{ role: 'user', content: prompt }],
   })
 
-  const raw2 = message.content[0].text.trim()
+  const raw = message.content[0].text.trim()
     .replace(/^```[\w]*\s*/i, '').replace(/\s*```\s*$/i, '').trim()
-  const docMatch2 = raw2.match(/<!doctype\s+html[\s\S]*<\/html>/i)
-  return injectBaseStyle(docMatch2 ? docMatch2[0] : raw2)
+  const docMatch = raw.match(/<!doctype\s+html[\s\S]*<\/html>/i)
+  return docMatch ? docMatch[0] : raw
 }
 
 // ── Support chat ──────────────────────────────────────────────────────────────
