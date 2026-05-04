@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{BUSINESS_NAME}}</title>
 <style>
+{{FONT_IMPORT}}
 :root {
   {{CSS_VARS}}
 }
@@ -12,7 +13,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--body-font);
   font-size: 16px;
   line-height: 1.6;
   color: var(--text);
@@ -22,6 +23,8 @@ body {
 
 a { color: inherit; text-decoration: none; }
 img { max-width: 100%; display: block; }
+
+h1, h2, h3 { font-family: var(--heading-font); }
 
 /* ── NAV ── */
 .nav {
@@ -34,8 +37,14 @@ img { max-width: 100%; display: block; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
   height: 60px;
+}
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
 }
 .nav-name {
   font-size: 18px;
@@ -63,14 +72,14 @@ img { max-width: 100%; display: block; }
 /* ── HERO ── */
 .hero {
   min-height: 100vh;
-  background: linear-gradient(160deg, var(--primary) 0%, var(--primary-dark) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
   padding: 80px 24px 48px;
+  position: relative;
 }
-.hero-inner { max-width: 700px; width: 100%; }
+.hero-inner { max-width: 700px; width: 100%; position: relative; z-index: 1; }
 .hero-name {
   font-size: clamp(34px, 9vw, 68px);
   font-weight: 900;
@@ -78,12 +87,14 @@ img { max-width: 100%; display: block; }
   line-height: 1.08;
   margin-bottom: 16px;
   letter-spacing: -1px;
+  text-shadow: 0 2px 20px rgba(0,0,0,0.3);
 }
 .hero-tagline {
   font-size: clamp(17px, 3vw, 22px);
-  color: rgba(255,255,255,0.85);
+  color: rgba(255,255,255,0.9);
   margin-bottom: 40px;
   line-height: 1.55;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.25);
 }
 .btn-cta {
   display: inline-flex;
@@ -96,6 +107,7 @@ img { max-width: 100%; display: block; }
   font-size: 18px;
   font-weight: 800;
   min-height: 56px;
+  font-family: var(--heading-font);
   transition: opacity 0.15s;
 }
 .btn-cta:hover { opacity: 0.9; }
@@ -119,14 +131,6 @@ img { max-width: 100%; display: block; }
 /* ── SECTIONS ── */
 .section { padding: 72px 24px; }
 .section-alt { background: var(--surface); }
-.section-label {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--accent);
-  margin-bottom: 10px;
-}
 .section-title {
   font-size: clamp(26px, 5vw, 40px);
   font-weight: 800;
@@ -145,11 +149,25 @@ img { max-width: 100%; display: block; }
 .accent-bar-center { margin-left: auto; margin-right: auto; }
 
 /* ── ABOUT ── */
+.about-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.about-content { flex: 1.2; }
 .about-text {
   font-size: 17px;
   line-height: 1.85;
   color: var(--text);
-  max-width: 680px;
+}
+.about-photo { flex: 1; }
+.about-photo img {
+  width: 100%;
+  border-radius: 16px;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
 }
 
 /* ── SERVICES ── */
@@ -157,19 +175,28 @@ img { max-width: 100%; display: block; }
   display: flex;
   flex-direction: column;
   gap: 20px;
-  margin-top: 8px;
+  max-width: 1100px;
+  margin: 0 auto;
 }
 .service-card {
   background: var(--bg);
   border-radius: 16px;
-  padding: 32px 28px;
+  overflow: hidden;
   border-left: 5px solid var(--accent);
+}
+.service-card-body { padding: 28px; }
+.service-photo img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  display: block;
 }
 .service-title {
   font-size: 20px;
   font-weight: 800;
   color: var(--primary);
   margin-bottom: 10px;
+  font-family: var(--heading-font);
 }
 .service-desc {
   font-size: 16px;
@@ -182,7 +209,8 @@ img { max-width: 100%; display: block; }
   display: flex;
   flex-direction: column;
   gap: 20px;
-  margin-top: 8px;
+  max-width: 1100px;
+  margin: 0 auto;
 }
 .review-card {
   background: var(--surface);
@@ -230,7 +258,7 @@ img { max-width: 100%; display: block; }
   border: none;
   border-radius: 10px;
   cursor: pointer;
-  font-family: inherit;
+  font-family: var(--heading-font);
   min-height: 56px;
   transition: opacity 0.15s;
   display: block;
@@ -249,6 +277,7 @@ img { max-width: 100%; display: block; }
   font-weight: 800;
   color: #fff;
   margin-bottom: 20px;
+  font-family: var(--heading-font);
 }
 .footer-link {
   color: rgba(255,255,255,0.7);
@@ -278,6 +307,7 @@ img { max-width: 100%; display: block; }
   height: 60px;
   font-size: 17px;
   font-weight: 800;
+  font-family: var(--heading-font);
   z-index: 200;
   gap: 8px;
 }
@@ -285,6 +315,8 @@ img { max-width: 100%; display: block; }
 /* ── DESKTOP ── */
 @media (min-width: 768px) {
   body { padding-bottom: 0; }
+
+  .about-inner { flex-direction: row; align-items: center; }
 
   .services-grid { flex-direction: row; }
   .service-card { flex: 1; min-width: 200px; }
@@ -309,12 +341,15 @@ img { max-width: 100%; display: block; }
 
 <!-- NAV -->
 <nav class="nav">
-  <span class="nav-name">{{BUSINESS_NAME}}</span>
+  <div class="nav-logo">
+    {{LOGO_SVG}}
+    <span class="nav-name">{{BUSINESS_NAME}}</span>
+  </div>
   {{NAV_CALL}}
 </nav>
 
-<!-- HERO -->
-<section class="hero">
+<!-- HERO (background set inline so {{HERO_BG}} can be any valid CSS value) -->
+<section class="hero" style="background: {{HERO_BG}};">
   <div class="hero-inner">
     <h1 class="hero-name">{{BUSINESS_NAME}}</h1>
     <p class="hero-tagline">{{TAGLINE}}</p>
@@ -331,9 +366,14 @@ img { max-width: 100%; display: block; }
 
 <!-- ABOUT -->
 <section class="section">
-  <div class="accent-bar"></div>
-  <h2 class="section-title">About Us</h2>
-  <p class="about-text">{{ABOUT}}</p>
+  <div class="about-inner">
+    <div class="about-content">
+      <div class="accent-bar"></div>
+      <h2 class="section-title">About Us</h2>
+      <p class="about-text">{{ABOUT}}</p>
+    </div>
+    {{ABOUT_PHOTO_HTML}}
+  </div>
 </section>
 
 <!-- SERVICES -->
@@ -342,16 +382,24 @@ img { max-width: 100%; display: block; }
   <h2 class="section-title section-title-center">Our Services</h2>
   <div class="services-grid">
     <div class="service-card">
-      <div class="service-title">{{SERVICE_1_TITLE}}</div>
-      <div class="service-desc">{{SERVICE_1_DESC}}</div>
+      {{SERVICE_PHOTO_1_HTML}}
+      <div class="service-card-body">
+        <div class="service-title">{{SERVICE_1_TITLE}}</div>
+        <div class="service-desc">{{SERVICE_1_DESC}}</div>
+      </div>
     </div>
     <div class="service-card">
-      <div class="service-title">{{SERVICE_2_TITLE}}</div>
-      <div class="service-desc">{{SERVICE_2_DESC}}</div>
+      {{SERVICE_PHOTO_2_HTML}}
+      <div class="service-card-body">
+        <div class="service-title">{{SERVICE_2_TITLE}}</div>
+        <div class="service-desc">{{SERVICE_2_DESC}}</div>
+      </div>
     </div>
     <div class="service-card">
-      <div class="service-title">{{SERVICE_3_TITLE}}</div>
-      <div class="service-desc">{{SERVICE_3_DESC}}</div>
+      <div class="service-card-body">
+        <div class="service-title">{{SERVICE_3_TITLE}}</div>
+        <div class="service-desc">{{SERVICE_3_DESC}}</div>
+      </div>
     </div>
   </div>
 </section>

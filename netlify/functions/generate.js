@@ -12,6 +12,16 @@ const CORS = {
 // Loaded once on cold start — included_files ensures this path exists in Lambda
 const TEMPLATE = readFileSync(join(process.cwd(), 'src/templates/base.html'), 'utf8')
 
+// ── Google Fonts imports per theme ────────────────────────────────────────────
+
+const FONT_IMPORTS = {
+  trustworthy: "@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Playfair+Display:wght@700;900&display=swap');",
+  bold:        "@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&family=Open+Sans:wght@400;600&display=swap');",
+  warm:        "@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Quicksand:wght@500;600;700&display=swap');",
+  exciting:    "@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Raleway:wght@400;600&display=swap');",
+  elegant:     "@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Libre+Baskerville:wght@400;700&display=swap');",
+}
+
 // ── Theme CSS variable sets ───────────────────────────────────────────────────
 
 const THEMES = {
@@ -22,6 +32,8 @@ const THEMES = {
     text:        '#1e293b',
     bg:          '#f8fafc',
     surface:     '#ffffff',
+    headingFont: "'Playfair Display', Georgia, serif",
+    bodyFont:    "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
   },
   bold: {
     primary:     '#CC0000',
@@ -30,6 +42,8 @@ const THEMES = {
     text:        '#f0f0f0',
     bg:          '#000000',
     surface:     '#111111',
+    headingFont: "'Oswald', sans-serif",
+    bodyFont:    "'Open Sans', system-ui, sans-serif",
   },
   warm: {
     primary:     '#d4547a',
@@ -38,6 +52,8 @@ const THEMES = {
     text:        '#5c2d3a',
     bg:          '#FFFDD0',
     surface:     '#fff0f3',
+    headingFont: "'Quicksand', 'Nunito', sans-serif",
+    bodyFont:    "'Nunito', system-ui, sans-serif",
   },
   exciting: {
     primary:     '#FF6B35',
@@ -46,6 +62,8 @@ const THEMES = {
     text:        '#1a0a00',
     bg:          '#fff8f0',
     surface:     '#ffffff',
+    headingFont: "'Montserrat', sans-serif",
+    bodyFont:    "'Raleway', system-ui, sans-serif",
   },
   elegant: {
     primary:     '#C9A84C',
@@ -54,6 +72,8 @@ const THEMES = {
     text:        '#d4c9b8',
     bg:          '#1A1A1A',
     surface:     '#242424',
+    headingFont: "'Cormorant Garamond', 'Libre Baskerville', serif",
+    bodyFont:    "'Libre Baskerville', Georgia, serif",
   },
 }
 
@@ -115,6 +135,29 @@ function ok(data) {
   }
 }
 
+// ── Unsplash photo fetch ──────────────────────────────────────────────────────
+
+async function fetchUnsplashPhotos(query, count = 4) {
+  const key = process.env.UNSPLASH_ACCESS_KEY
+  if (!key) return []
+  try {
+    const url = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&orientation=landscape&per_page=${count}`
+    const res = await fetch(url, { headers: { Authorization: `Client-ID ${key}` } })
+    if (!res.ok) return []
+    const data = await res.json()
+    return (data.results || []).map(p => `${p.urls.raw}&w=1600&h=900&fit=crop&auto=format&q=80`)
+  } catch {
+    return []
+  }
+}
+
+// ── SVG logo generator ────────────────────────────────────────────────────────
+
+function generateLogoSvg(businessName, primaryColor) {
+  const letter = (businessName.trim()[0] || 'B').toUpperCase()
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36" style="flex-shrink:0"><circle cx="18" cy="18" r="18" fill="${primaryColor}"/><text x="18" y="24" text-anchor="middle" font-family="Arial,sans-serif" font-size="18" font-weight="700" fill="white">${letter}</text></svg>`
+}
+
 // ── Phase 1: Sonnet generates content JSON (fast, ~800 tokens out) ────────────
 
 async function generateContentJson({ businessName, businessType, city, state, businessDescription }) {
@@ -155,6 +198,7 @@ function buildPage(theme, data, params) {
   const {
     businessName, phone, email, businessHours, address,
     photoBase64, photoMimeType, telDigits,
+    heroPhotoUrl, aboutPhotoUrl, servicePhoto1Url, servicePhoto2Url,
   } = params
 
   const {
@@ -175,9 +219,16 @@ function buildPage(theme, data, params) {
     `--text: ${t.text}`,
     `--bg: ${t.bg}`,
     `--surface: ${t.surface}`,
+    `--heading-font: ${t.headingFont}`,
+    `--body-font: ${t.bodyFont}`,
   ].join(';\n  ') + ';'
 
-  // Optional blocks — empty string if data missing
+  // Hero background: photo with dark overlay, or gradient fallback
+  const heroBg = heroPhotoUrl
+    ? `linear-gradient(rgba(0,0,0,0.52), rgba(0,0,0,0.62)), url('${heroPhotoUrl}') center/cover no-repeat`
+    : `linear-gradient(160deg, ${t.primary} 0%, ${t.primaryDark} 100%)`
+
+  // Optional blocks
   const navCall = phone
     ? `<a href="tel:${telDigits}" class="nav-call">📞 ${phone}</a>`
     : ''
@@ -186,61 +237,62 @@ function buildPage(theme, data, params) {
     ? `<a href="tel:${telDigits}" class="call-bar">📞 Call Now — ${phone}</a>`
     : ''
 
-  const phoneFooter = phone
-    ? `<a href="tel:${telDigits}" class="footer-link">📞 ${phone}</a>`
+  const phoneFooter  = phone         ? `<a href="tel:${telDigits}" class="footer-link">📞 ${phone}</a>`              : ''
+  const emailFooter  = email         ? `<a href="mailto:${email}" class="footer-link">✉️ ${email}</a>`               : ''
+  const addressFooter = address      ? `<p class="footer-link">📍 ${address}</p>`                                     : ''
+  const hoursFooter  = businessHours ? `<p class="footer-link">🕐 ${businessHours}</p>`                              : ''
+
+  // Photo blocks
+  const aboutPhotoHtml = aboutPhotoUrl
+    ? `<div class="about-photo"><img src="${aboutPhotoUrl}" alt="${businessName}" loading="lazy"></div>`
+    : (photoBase64 ? `<div class="about-photo"><img src="data:${photoMimeType||'image/jpeg'};base64,${photoBase64}" alt="${businessName}"></div>` : '')
+
+  const servicePhoto1Html = servicePhoto1Url
+    ? `<div class="service-photo"><img src="${servicePhoto1Url}" alt="${service1Title}" loading="lazy"></div>`
     : ''
 
-  const emailFooter = email
-    ? `<a href="mailto:${email}" class="footer-link">✉️ ${email}</a>`
-    : ''
-
-  const addressFooter = address
-    ? `<p class="footer-link">📍 ${address}</p>`
-    : ''
-
-  const hoursFooter = businessHours
-    ? `<p class="footer-link">🕐 ${businessHours}</p>`
+  const servicePhoto2Html = servicePhoto2Url
+    ? `<div class="service-photo"><img src="${servicePhoto2Url}" alt="${service2Title}" loading="lazy"></div>`
     : ''
 
   const replacements = {
-    CSS_VARS:        cssVars,
-    BUSINESS_NAME:   businessName,
-    TAGLINE:         tagline,
-    PHONE:           phone || '',
-    TEL_DIGITS:      telDigits,
-    EMAIL:           email || '',
-    ADDRESS:         address || '',
-    HOURS:           businessHours || '',
-    ABOUT:           about,
-    SERVICE_1_TITLE: service1Title,
-    SERVICE_1_DESC:  service1Desc,
-    SERVICE_2_TITLE: service2Title,
-    SERVICE_2_DESC:  service2Desc,
-    SERVICE_3_TITLE: service3Title,
-    SERVICE_3_DESC:  service3Desc,
-    REVIEW_1:        review1,
-    REVIEW_2:        review2,
-    REVIEW_3:        review3,
-    NAV_CALL:        navCall,
-    PHONE_FOOTER:    phoneFooter,
-    EMAIL_FOOTER:    emailFooter,
-    ADDRESS_FOOTER:  addressFooter,
-    HOURS_FOOTER:    hoursFooter,
-    CALL_BAR:        callBar,
-    YEAR:            String(new Date().getFullYear()),
+    FONT_IMPORT:        FONT_IMPORTS[theme] ?? FONT_IMPORTS.trustworthy,
+    CSS_VARS:           cssVars,
+    LOGO_SVG:           generateLogoSvg(businessName, t.primary),
+    HERO_BG:            heroBg,
+    BUSINESS_NAME:      businessName,
+    TAGLINE:            tagline,
+    PHONE:              phone || '',
+    TEL_DIGITS:         telDigits,
+    EMAIL:              email || '',
+    ADDRESS:            address || '',
+    HOURS:              businessHours || '',
+    ABOUT:              about,
+    ABOUT_PHOTO_HTML:   aboutPhotoHtml,
+    SERVICE_1_TITLE:    service1Title,
+    SERVICE_1_DESC:     service1Desc,
+    SERVICE_2_TITLE:    service2Title,
+    SERVICE_2_DESC:     service2Desc,
+    SERVICE_3_TITLE:    service3Title,
+    SERVICE_3_DESC:     service3Desc,
+    SERVICE_PHOTO_1_HTML: servicePhoto1Html,
+    SERVICE_PHOTO_2_HTML: servicePhoto2Html,
+    REVIEW_1:           review1,
+    REVIEW_2:           review2,
+    REVIEW_3:           review3,
+    NAV_CALL:           navCall,
+    PHONE_FOOTER:       phoneFooter,
+    EMAIL_FOOTER:       emailFooter,
+    ADDRESS_FOOTER:     addressFooter,
+    HOURS_FOOTER:       hoursFooter,
+    CALL_BAR:           callBar,
+    YEAR:               String(new Date().getFullYear()),
   }
 
   let html = TEMPLATE
   for (const [key, val] of Object.entries(replacements)) {
     html = html.replaceAll(`{{${key}}}`, val)
   }
-
-  // Inject lead capture script if photo provided
-  if (photoBase64) {
-    const photoTag = `<img src="data:${photoMimeType || 'image/jpeg'};base64,${photoBase64}" alt="${businessName}" style="width:100%;max-width:560px;border-radius:16px;margin:32px auto 0">`
-    html = html.replace('</section>\n\n<!-- SERVICES -->', photoTag + '\n</section>\n\n<!-- SERVICES -->')
-  }
-
   return html
 }
 
@@ -253,11 +305,22 @@ async function handleGenerateWebsite({
 }) {
   const telDigits = phone ? phone.replace(/\D/g, '') : ''
 
-  const data = await generateContentJson({ businessName, businessType, city, state, businessDescription })
+  // Phase 1 + Unsplash run concurrently
+  const searchQuery = [businessType, city].filter(Boolean).join(' ')
+  const [data, photos] = await Promise.all([
+    generateContentJson({ businessName, businessType, city, state, businessDescription }),
+    fetchUnsplashPhotos(searchQuery, 4),
+  ])
+
+  console.log('[SF-SERVER] Unsplash photos fetched:', photos.length)
 
   return buildPage(themeVibe, data, {
     businessName, phone, email, businessHours, address,
     facebook, instagram, photoBase64, photoMimeType, telDigits,
+    heroPhotoUrl:    photos[0] ?? null,
+    aboutPhotoUrl:   photos[1] ?? null,
+    servicePhoto1Url: photos[2] ?? null,
+    servicePhoto2Url: photos[3] ?? null,
   })
 }
 
