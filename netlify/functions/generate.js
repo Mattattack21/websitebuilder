@@ -168,21 +168,32 @@ Business: ${businessName}, a ${businessType} in ${city}, ${state}${businessDescr
 Return exactly this JSON structure:
 {
   "tagline": "compelling 6-10 word hero headline",
+  "heroSub": "one sentence expanding on the tagline, mentioning ${city}",
+  "aboutHeadline": "compelling 4-6 word about-section headline",
   "about": "2-3 sentences about the business. Mention ${city} and what makes them great.",
   "service1Title": "First service name (2-4 words)",
   "service1Desc": "One sentence description of first service.",
+  "service1Icon": "single emoji representing first service",
   "service2Title": "Second service name (2-4 words)",
   "service2Desc": "One sentence description of second service.",
+  "service2Icon": "single emoji representing second service",
   "service3Title": "Third service name (2-4 words)",
   "service3Desc": "One sentence description of third service.",
-  "review1": "Authentic-sounding 1-2 sentence customer review praising the business.",
-  "review2": "Authentic-sounding 1-2 sentence customer review praising the business.",
-  "review3": "Authentic-sounding 1-2 sentence customer review praising the business."
+  "service3Icon": "single emoji representing third service",
+  "trust1": "2-4 word trust badge appropriate for a ${businessType} (e.g. 'Licensed & Insured', 'Family Owned', 'Free Estimates')",
+  "trust2": "2-4 word trust badge appropriate for a ${businessType}",
+  "trust3": "2-4 word trust badge appropriate for a ${businessType}",
+  "review1Text": "Authentic-sounding 1-2 sentence customer review praising the business.",
+  "review1Author": "Realistic reviewer name, first name + last initial (e.g. Sarah M.)",
+  "review2Text": "Authentic-sounding 1-2 sentence customer review praising the business.",
+  "review2Author": "Realistic reviewer name, first name + last initial",
+  "review3Text": "Authentic-sounding 1-2 sentence customer review praising the business.",
+  "review3Author": "Realistic reviewer name, first name + last initial"
 }`
 
   const message = await client.messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 800,
+    max_tokens: 1200,
     messages: [{ role: 'user', content: prompt }],
   })
 
@@ -197,96 +208,80 @@ Return exactly this JSON structure:
 function buildPage(theme, data, params) {
   const {
     businessName, phone, email, businessHours, address,
-    photoBase64, photoMimeType, telDigits,
-    heroPhotoUrl, aboutPhotoUrl, servicePhoto1Url, servicePhoto2Url,
+    city, businessType,
+    facebook, instagram, telDigits,
+    heroPhotoUrl,
   } = params
 
   const {
-    tagline,
+    tagline, heroSub, aboutHeadline,
     about,
-    service1Title, service1Desc,
-    service2Title, service2Desc,
-    service3Title, service3Desc,
-    review1, review2, review3,
+    service1Title, service1Desc, service1Icon,
+    service2Title, service2Desc, service2Icon,
+    service3Title, service3Desc, service3Icon,
+    trust1, trust2, trust3,
+    review1Text, review1Author,
+    review2Text, review2Author,
+    review3Text, review3Author,
   } = data
 
   const t = THEMES[theme] ?? THEMES.trustworthy
 
-  const cssVars = [
-    `--primary: ${t.primary}`,
-    `--primary-dark: ${t.primaryDark}`,
-    `--accent: ${t.accent}`,
-    `--text: ${t.text}`,
-    `--bg: ${t.bg}`,
-    `--surface: ${t.surface}`,
-    `--heading-font: ${t.headingFont}`,
-    `--body-font: ${t.bodyFont}`,
-  ].join(';\n  ') + ';'
-
-  // Hero background: photo with dark overlay, or gradient fallback
-  const heroBg = heroPhotoUrl
-    ? `linear-gradient(rgba(0,0,0,0.52), rgba(0,0,0,0.62)), url('${heroPhotoUrl}') center/cover no-repeat`
-    : `linear-gradient(160deg, ${t.primary} 0%, ${t.primaryDark} 100%)`
-
-  // Optional blocks
-  const navCall = phone
-    ? `<a href="tel:${telDigits}" class="nav-call">📞 ${phone}</a>`
+  const heroPhotoHtml = heroPhotoUrl
+    ? `<img class="photo-hero" src="${heroPhotoUrl}" alt="${businessName}" loading="lazy">`
     : ''
 
-  const callBar = phone
-    ? `<a href="tel:${telDigits}" class="call-bar">📞 Call Now — ${phone}</a>`
-    : ''
+  const emailLine   = email         ? `<span>✉️ <a href="mailto:${email}">${email}</a></span>`  : ''
+  const addressLine = address       ? `<span>📍 ${address}</span>`                               : ''
+  const hoursLine   = businessHours ? `<span>🕐 ${businessHours}</span>`                        : ''
 
-  const phoneFooter  = phone         ? `<a href="tel:${telDigits}" class="footer-link">📞 ${phone}</a>`              : ''
-  const emailFooter  = email         ? `<a href="mailto:${email}" class="footer-link">✉️ ${email}</a>`               : ''
-  const addressFooter = address      ? `<p class="footer-link">📍 ${address}</p>`                                     : ''
-  const hoursFooter  = businessHours ? `<p class="footer-link">🕐 ${businessHours}</p>`                              : ''
-
-  // Photo blocks
-  const aboutPhotoHtml = aboutPhotoUrl
-    ? `<div class="about-photo"><img src="${aboutPhotoUrl}" alt="${businessName}" loading="lazy"></div>`
-    : (photoBase64 ? `<div class="about-photo"><img src="data:${photoMimeType||'image/jpeg'};base64,${photoBase64}" alt="${businessName}"></div>` : '')
-
-  const servicePhoto1Html = servicePhoto1Url
-    ? `<div class="service-photo"><img src="${servicePhoto1Url}" alt="${service1Title}" loading="lazy"></div>`
-    : ''
-
-  const servicePhoto2Html = servicePhoto2Url
-    ? `<div class="service-photo"><img src="${servicePhoto2Url}" alt="${service2Title}" loading="lazy"></div>`
+  const socialLinks = []
+  if (facebook) socialLinks.push(`<a href="${facebook}" target="_blank" rel="noopener">Facebook</a>`)
+  if (instagram) socialLinks.push(`<a href="${instagram}" target="_blank" rel="noopener">Instagram</a>`)
+  const socialHtml = socialLinks.length
+    ? `<div class="footer-social">${socialLinks.join('')}</div>`
     : ''
 
   const replacements = {
-    FONT_IMPORT:        FONT_IMPORTS[theme] ?? FONT_IMPORTS.trustworthy,
-    CSS_VARS:           cssVars,
-    LOGO_SVG:           generateLogoSvg(businessName, t.primary),
-    HERO_BG:            heroBg,
-    BUSINESS_NAME:      businessName,
-    TAGLINE:            tagline,
-    PHONE:              phone || '',
-    TEL_DIGITS:         telDigits,
-    EMAIL:              email || '',
-    ADDRESS:            address || '',
-    HOURS:              businessHours || '',
-    ABOUT:              about,
-    ABOUT_PHOTO_HTML:   aboutPhotoHtml,
-    SERVICE_1_TITLE:    service1Title,
-    SERVICE_1_DESC:     service1Desc,
-    SERVICE_2_TITLE:    service2Title,
-    SERVICE_2_DESC:     service2Desc,
-    SERVICE_3_TITLE:    service3Title,
-    SERVICE_3_DESC:     service3Desc,
-    SERVICE_PHOTO_1_HTML: servicePhoto1Html,
-    SERVICE_PHOTO_2_HTML: servicePhoto2Html,
-    REVIEW_1:           review1,
-    REVIEW_2:           review2,
-    REVIEW_3:           review3,
-    NAV_CALL:           navCall,
-    PHONE_FOOTER:       phoneFooter,
-    EMAIL_FOOTER:       emailFooter,
-    ADDRESS_FOOTER:     addressFooter,
-    HOURS_FOOTER:       hoursFooter,
-    CALL_BAR:           callBar,
-    YEAR:               String(new Date().getFullYear()),
+    BUSINESS_NAME:     businessName,
+    PRIMARY:           t.primary,
+    PRIMARY_DARK:      t.primaryDark,
+    ACCENT:            t.accent,
+    PHONE_RAW:         telDigits,
+    PHONE:             phone || '',
+    CITY:              city || '',
+    INDUSTRY:          businessType || '',
+    TAGLINE:           tagline,
+    HERO_SUB:          heroSub || '',
+    TRUST_1:           trust1 || '',
+    TRUST_2:           trust2 || '',
+    TRUST_3:           trust3 || '',
+    HERO_PHOTO_HTML:   heroPhotoHtml,
+    ABOUT_HEADLINE:    aboutHeadline || '',
+    ABOUT:             about,
+    SERVICE_1_ICON:    service1Icon || '🔧',
+    SERVICE_1_TITLE:   service1Title,
+    SERVICE_1_DESC:    service1Desc,
+    SERVICE_2_ICON:    service2Icon || '🔧',
+    SERVICE_2_TITLE:   service2Title,
+    SERVICE_2_DESC:    service2Desc,
+    SERVICE_3_ICON:    service3Icon || '🔧',
+    SERVICE_3_TITLE:   service3Title,
+    SERVICE_3_DESC:    service3Desc,
+    REVIEW_1_TEXT:     review1Text || '',
+    REVIEW_1_AUTHOR:   review1Author || 'Happy Customer',
+    REVIEW_2_TEXT:     review2Text || '',
+    REVIEW_2_AUTHOR:   review2Author || 'Happy Customer',
+    REVIEW_3_TEXT:     review3Text || '',
+    REVIEW_3_AUTHOR:   review3Author || 'Happy Customer',
+    EMAIL_LINE:        emailLine,
+    ADDRESS_LINE:      addressLine,
+    HOURS_LINE:        hoursLine,
+    SOCIAL_HTML:       socialHtml,
+    USER_ID:           '',
+    SUPABASE_URL:      process.env.SUPABASE_URL || '',
+    SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || '',
+    YEAR:              String(new Date().getFullYear()),
   }
 
   let html = TEMPLATE
@@ -309,18 +304,16 @@ async function handleGenerateWebsite({
   const searchQuery = [businessType, city].filter(Boolean).join(' ')
   const [data, photos] = await Promise.all([
     generateContentJson({ businessName, businessType, city, state, businessDescription }),
-    fetchUnsplashPhotos(searchQuery, 4),
+    fetchUnsplashPhotos(searchQuery, 1),
   ])
 
   console.log('[SF-SERVER] Unsplash photos fetched:', photos.length)
 
   return buildPage(themeVibe, data, {
     businessName, phone, email, businessHours, address,
-    facebook, instagram, photoBase64, photoMimeType, telDigits,
-    heroPhotoUrl:    photos[0] ?? null,
-    aboutPhotoUrl:   photos[1] ?? null,
-    servicePhoto1Url: photos[2] ?? null,
-    servicePhoto2Url: photos[3] ?? null,
+    city, businessType,
+    facebook, instagram, telDigits,
+    heroPhotoUrl: photos[0] ?? null,
   })
 }
 

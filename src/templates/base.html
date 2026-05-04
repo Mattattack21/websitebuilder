@@ -5,472 +5,208 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{BUSINESS_NAME}}</title>
 <style>
-{{FONT_IMPORT}}
-:root {
-  {{CSS_VARS}}
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --primary:{{PRIMARY}};
+  --primary-dark:{{PRIMARY_DARK}};
+  --accent:{{ACCENT}};
+  --text:#1a1a1a;
+  --light:#f8f9fa;
+  --white:#ffffff;
 }
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  font-family: var(--body-font);
-  font-size: 16px;
-  line-height: 1.6;
-  color: var(--text);
-  background: var(--bg);
-  padding-bottom: 68px;
-}
-
-a { color: inherit; text-decoration: none; }
-img { max-width: 100%; display: block; }
-
-h1, h2, h3 { font-family: var(--heading-font); }
-
-/* ── NAV ── */
-.nav {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: var(--surface);
-  box-shadow: 0 2px 16px rgba(0,0,0,0.08);
-  padding: 0 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  height: 60px;
-}
-.nav-logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  overflow: hidden;
-}
-.nav-name {
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.nav-call {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--primary);
-  color: #fff;
-  padding: 0 18px;
-  border-radius: 999px;
-  font-weight: 700;
-  font-size: 14px;
-  white-space: nowrap;
-  min-height: 44px;
-  flex-shrink: 0;
-}
-
-/* ── HERO ── */
-.hero {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 80px 24px 48px;
-  position: relative;
-}
-.hero-inner { max-width: 700px; width: 100%; position: relative; z-index: 1; }
-.hero-name {
-  font-size: clamp(34px, 9vw, 68px);
-  font-weight: 900;
-  color: #fff;
-  line-height: 1.08;
-  margin-bottom: 16px;
-  letter-spacing: -1px;
-  text-shadow: 0 2px 20px rgba(0,0,0,0.3);
-}
-.hero-tagline {
-  font-size: clamp(17px, 3vw, 22px);
-  color: rgba(255,255,255,0.9);
-  margin-bottom: 40px;
-  line-height: 1.55;
-  text-shadow: 0 1px 8px rgba(0,0,0,0.25);
-}
-.btn-cta {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: #fff;
-  color: var(--primary);
-  padding: 0 36px;
-  border-radius: 10px;
-  font-size: 18px;
-  font-weight: 800;
-  min-height: 56px;
-  font-family: var(--heading-font);
-  transition: opacity 0.15s;
-}
-.btn-cta:hover { opacity: 0.9; }
-
-/* ── TRUST BAR ── */
-.trust-bar {
-  background: var(--primary);
-  padding: 16px 24px;
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 12px 28px;
-}
-.trust-badge {
-  color: #fff;
-  font-weight: 700;
-  font-size: 14px;
-  white-space: nowrap;
-}
-
-/* ── SECTIONS ── */
-.section { padding: 72px 24px; }
-.section-alt { background: var(--surface); }
-.section-title {
-  font-size: clamp(26px, 5vw, 40px);
-  font-weight: 800;
-  color: var(--primary);
-  line-height: 1.18;
-  margin-bottom: 24px;
-}
-.section-title-center { text-align: center; }
-.accent-bar {
-  width: 48px;
-  height: 5px;
-  background: var(--accent);
-  border-radius: 3px;
-  margin-bottom: 16px;
-}
-.accent-bar-center { margin-left: auto; margin-right: auto; }
-
-/* ── ABOUT ── */
-.about-inner {
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
-  max-width: 1100px;
-  margin: 0 auto;
-}
-.about-content { flex: 1.2; }
-.about-text {
-  font-size: 17px;
-  line-height: 1.85;
-  color: var(--text);
-}
-.about-photo { flex: 1; }
-.about-photo img {
-  width: 100%;
-  border-radius: 16px;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
-}
-
-/* ── SERVICES ── */
-.services-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  max-width: 1100px;
-  margin: 0 auto;
-}
-.service-card {
-  background: var(--bg);
-  border-radius: 16px;
-  overflow: hidden;
-  border-left: 5px solid var(--accent);
-}
-.service-card-body { padding: 28px; }
-.service-photo img {
-  width: 100%;
-  height: 180px;
-  object-fit: cover;
-  display: block;
-}
-.service-title {
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--primary);
-  margin-bottom: 10px;
-  font-family: var(--heading-font);
-}
-.service-desc {
-  font-size: 16px;
-  color: var(--text);
-  line-height: 1.7;
-}
-
-/* ── REVIEWS ── */
-.reviews-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  max-width: 1100px;
-  margin: 0 auto;
-}
-.review-card {
-  background: var(--surface);
-  border-radius: 16px;
-  padding: 28px;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
-}
-.review-stars {
-  color: #f59e0b;
-  font-size: 20px;
-  margin-bottom: 12px;
-  letter-spacing: 2px;
-}
-.review-text {
-  font-size: 16px;
-  line-height: 1.7;
-  color: var(--text);
-  font-style: italic;
-}
-
-/* ── CONTACT ── */
-.contact-wrap { max-width: 560px; margin: 0 auto; }
-.form-group { margin-bottom: 16px; }
-.form-input {
-  width: 100%;
-  padding: 15px 18px;
-  font-size: 16px;
-  border: 2px solid rgba(128,128,128,0.2);
-  border-radius: 10px;
-  background: var(--surface);
-  color: var(--text);
-  font-family: inherit;
-  outline: none;
-  transition: border-color 0.15s;
-  display: block;
-}
-.form-input:focus { border-color: var(--accent); }
-.btn-submit {
-  width: 100%;
-  padding: 0 24px;
-  font-size: 18px;
-  font-weight: 800;
-  background: linear-gradient(135deg, var(--primary), var(--accent));
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  font-family: var(--heading-font);
-  min-height: 56px;
-  transition: opacity 0.15s;
-  display: block;
-}
-.btn-submit:hover { opacity: 0.9; }
-
-/* ── FOOTER ── */
-.footer {
-  background: var(--primary-dark);
-  color: rgba(255,255,255,0.7);
-  padding: 56px 24px;
-  text-align: center;
-}
-.footer-name {
-  font-size: 22px;
-  font-weight: 800;
-  color: #fff;
-  margin-bottom: 20px;
-  font-family: var(--heading-font);
-}
-.footer-link {
-  color: rgba(255,255,255,0.7);
-  display: block;
-  margin-bottom: 8px;
-  font-size: 15px;
-}
-.footer-divider {
-  width: 48px;
-  height: 1px;
-  background: rgba(255,255,255,0.15);
-  margin: 24px auto;
-}
-.footer-copy { font-size: 13px; opacity: 0.4; }
-
-/* ── FIXED CALL BAR ── */
-.call-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: var(--primary);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 60px;
-  font-size: 17px;
-  font-weight: 800;
-  font-family: var(--heading-font);
-  z-index: 200;
-  gap: 8px;
-}
-
-/* ── DESKTOP ── */
-@media (min-width: 768px) {
-  body { padding-bottom: 0; }
-
-  .about-inner { flex-direction: row; align-items: center; }
-
-  .services-grid { flex-direction: row; }
-  .service-card { flex: 1; min-width: 200px; }
-
-  .reviews-grid { flex-direction: row; }
-  .review-card { flex: 1; min-width: 200px; }
-
-  .call-bar {
-    left: auto;
-    right: 28px;
-    bottom: 28px;
-    border-radius: 999px;
-    width: auto;
-    padding: 0 28px;
-    box-shadow: 0 6px 28px rgba(0,0,0,0.25);
-    font-size: 15px;
-  }
-}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:var(--text);font-size:16px;line-height:1.6;padding-bottom:70px}
+.nav{position:sticky;top:0;z-index:100;background:var(--white);box-shadow:0 2px 20px rgba(0,0,0,0.08);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:64px}
+.nav-logo{font-size:20px;font-weight:800;color:var(--primary);letter-spacing:-0.5px}
+.nav-cta{background:var(--primary);color:var(--white);padding:10px 20px;border-radius:50px;font-weight:700;font-size:15px;text-decoration:none;white-space:nowrap}
+.hero{background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);color:var(--white);padding:80px 24px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-50%;right:-20%;width:600px;height:600px;background:rgba(255,255,255,0.05);border-radius:50%;pointer-events:none}
+.hero-eyebrow{font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;opacity:0.8;margin-bottom:16px}
+.hero h1{font-size:clamp(32px,6vw,56px);font-weight:900;line-height:1.1;margin-bottom:20px;letter-spacing:-1px}
+.hero-sub{font-size:18px;opacity:0.9;margin-bottom:40px;max-width:500px;margin-left:auto;margin-right:auto}
+.hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn-primary{background:var(--white);color:var(--primary);padding:16px 32px;border-radius:50px;font-weight:800;font-size:16px;text-decoration:none;display:inline-block}
+.btn-secondary{border:2px solid rgba(255,255,255,0.6);color:var(--white);padding:14px 28px;border-radius:50px;font-weight:700;font-size:16px;text-decoration:none;display:inline-block}
+.trust{background:var(--accent);color:var(--white);padding:14px 24px;display:flex;justify-content:center;gap:32px;flex-wrap:wrap}
+.trust-item{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px}
+.photo-hero{width:100%;height:280px;object-fit:cover;display:block}
+.about{padding:64px 24px;max-width:680px;margin:0 auto;text-align:center}
+.section-label{font-size:12px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+.about h2{font-size:clamp(24px,4vw,36px);font-weight:800;margin-bottom:20px;line-height:1.2}
+.about p{font-size:17px;color:#444;line-height:1.8}
+.services{background:var(--light);padding:64px 24px}
+.services-inner{max-width:1000px;margin:0 auto}
+.services h2{font-size:clamp(24px,4vw,36px);font-weight:800;text-align:center;margin-bottom:40px}
+.services-grid{display:grid;grid-template-columns:1fr;gap:20px}
+@media(min-width:600px){.services-grid{grid-template-columns:repeat(3,1fr)}}
+.service-card{background:var(--white);border-radius:20px;padding:32px 24px;box-shadow:0 4px 24px rgba(0,0,0,0.06);border-top:4px solid var(--accent)}
+.service-icon{font-size:40px;margin-bottom:16px}
+.service-card h3{font-size:20px;font-weight:800;margin-bottom:10px}
+.service-card p{font-size:15px;color:#555;line-height:1.7}
+.reviews{padding:64px 24px}
+.reviews-inner{max-width:1000px;margin:0 auto}
+.reviews h2{font-size:clamp(24px,4vw,36px);font-weight:800;text-align:center;margin-bottom:40px}
+.reviews-grid{display:grid;grid-template-columns:1fr;gap:20px}
+@media(min-width:600px){.reviews-grid{grid-template-columns:repeat(3,1fr)}}
+.review-card{background:var(--white);border-radius:20px;padding:28px;box-shadow:0 4px 24px rgba(0,0,0,0.06)}
+.stars{color:#FFB800;font-size:18px;margin-bottom:12px}
+.review-text{font-size:15px;color:#444;line-height:1.7;margin-bottom:16px;font-style:italic}
+.review-author{font-weight:800;font-size:14px;color:var(--primary)}
+.contact{background:var(--light);padding:64px 24px}
+.contact-inner{max-width:560px;margin:0 auto}
+.contact h2{font-size:clamp(24px,4vw,36px);font-weight:800;text-align:center;margin-bottom:8px}
+.contact-sub{text-align:center;color:#555;margin-bottom:36px;font-size:16px}
+.form-group{margin-bottom:16px}
+.form-group input,.form-group textarea{width:100%;padding:16px 20px;border:2px solid #e8e8e8;border-radius:14px;font-size:16px;font-family:inherit;outline:none;transition:border-color 0.2s;-webkit-appearance:none}
+.form-group input:focus,.form-group textarea:focus{border-color:var(--primary)}
+.form-group textarea{height:120px;resize:vertical}
+.btn-submit{width:100%;background:var(--primary);color:var(--white);padding:18px;border:none;border-radius:14px;font-size:18px;font-weight:800;cursor:pointer;margin-top:8px;-webkit-appearance:none}
+.success-msg{display:none;text-align:center;padding:24px;background:#d4edda;border-radius:14px;color:#155724;font-weight:700;font-size:18px;margin-top:16px}
+.footer{background:#1a1a1a;color:#ccc;padding:48px 24px 32px}
+.footer-inner{max-width:800px;margin:0 auto;text-align:center}
+.footer-name{font-size:22px;font-weight:800;color:var(--white);margin-bottom:16px}
+.footer-info{display:flex;flex-direction:column;gap:8px;font-size:15px}
+.footer-info a{color:#ccc;text-decoration:none}
+.footer-social{margin-top:16px;display:flex;justify-content:center;gap:16px}
+.footer-social a{color:#ccc;text-decoration:none;font-size:14px}
+.footer-bottom{margin-top:32px;padding-top:24px;border-top:1px solid #333;font-size:13px;color:#888}
+.float-call{position:fixed;bottom:0;left:0;right:0;z-index:999;background:var(--accent);color:var(--white);padding:18px 24px;text-align:center;font-size:18px;font-weight:800;text-decoration:none;display:block;box-shadow:0 -4px 20px rgba(0,0,0,0.15)}
 </style>
 </head>
 <body>
 
-<!-- NAV -->
 <nav class="nav">
-  <div class="nav-logo">
-    {{LOGO_SVG}}
-    <span class="nav-name">{{BUSINESS_NAME}}</span>
-  </div>
-  {{NAV_CALL}}
+  <div class="nav-logo">{{BUSINESS_NAME}}</div>
+  <a href="tel:{{PHONE_RAW}}" class="nav-cta">📞 Call Now</a>
 </nav>
 
-<!-- HERO (background set inline so {{HERO_BG}} can be any valid CSS value) -->
-<section class="hero" style="background: {{HERO_BG}};">
-  <div class="hero-inner">
-    <h1 class="hero-name">{{BUSINESS_NAME}}</h1>
-    <p class="hero-tagline">{{TAGLINE}}</p>
-    <a href="#contact" class="btn-cta">Get In Touch</a>
+<section class="hero">
+  <div class="hero-eyebrow">{{CITY}} · {{INDUSTRY}}</div>
+  <h1>{{TAGLINE}}</h1>
+  <p class="hero-sub">{{HERO_SUB}}</p>
+  <div class="hero-btns">
+    <a href="#contact" class="btn-primary">Get Free Quote</a>
+    <a href="tel:{{PHONE_RAW}}" class="btn-secondary">📞 {{PHONE}}</a>
   </div>
 </section>
 
-<!-- TRUST BAR -->
-<div class="trust-bar">
-  <span class="trust-badge">✓ Licensed &amp; Insured</span>
-  <span class="trust-badge">⭐ 5-Star Rated</span>
-  <span class="trust-badge">💰 Free Estimates</span>
+<div class="trust">
+  <div class="trust-item">✅ {{TRUST_1}}</div>
+  <div class="trust-item">⭐ {{TRUST_2}}</div>
+  <div class="trust-item">🚀 {{TRUST_3}}</div>
 </div>
 
-<!-- ABOUT -->
-<section class="section">
-  <div class="about-inner">
-    <div class="about-content">
-      <div class="accent-bar"></div>
-      <h2 class="section-title">About Us</h2>
-      <p class="about-text">{{ABOUT}}</p>
-    </div>
-    {{ABOUT_PHOTO_HTML}}
-  </div>
+{{HERO_PHOTO_HTML}}
+
+<section class="about">
+  <div class="section-label">About Us</div>
+  <h2>{{ABOUT_HEADLINE}}</h2>
+  <p>{{ABOUT}}</p>
 </section>
 
-<!-- SERVICES -->
-<section class="section section-alt">
-  <div class="accent-bar accent-bar-center"></div>
-  <h2 class="section-title section-title-center">Our Services</h2>
-  <div class="services-grid">
-    <div class="service-card">
-      {{SERVICE_PHOTO_1_HTML}}
-      <div class="service-card-body">
-        <div class="service-title">{{SERVICE_1_TITLE}}</div>
-        <div class="service-desc">{{SERVICE_1_DESC}}</div>
+<section class="services">
+  <div class="services-inner">
+    <h2>Our Services</h2>
+    <div class="services-grid">
+      <div class="service-card">
+        <div class="service-icon">{{SERVICE_1_ICON}}</div>
+        <h3>{{SERVICE_1_TITLE}}</h3>
+        <p>{{SERVICE_1_DESC}}</p>
       </div>
-    </div>
-    <div class="service-card">
-      {{SERVICE_PHOTO_2_HTML}}
-      <div class="service-card-body">
-        <div class="service-title">{{SERVICE_2_TITLE}}</div>
-        <div class="service-desc">{{SERVICE_2_DESC}}</div>
+      <div class="service-card">
+        <div class="service-icon">{{SERVICE_2_ICON}}</div>
+        <h3>{{SERVICE_2_TITLE}}</h3>
+        <p>{{SERVICE_2_DESC}}</p>
       </div>
-    </div>
-    <div class="service-card">
-      <div class="service-card-body">
-        <div class="service-title">{{SERVICE_3_TITLE}}</div>
-        <div class="service-desc">{{SERVICE_3_DESC}}</div>
+      <div class="service-card">
+        <div class="service-icon">{{SERVICE_3_ICON}}</div>
+        <h3>{{SERVICE_3_TITLE}}</h3>
+        <p>{{SERVICE_3_DESC}}</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- REVIEWS -->
-<section class="section">
-  <div class="accent-bar accent-bar-center"></div>
-  <h2 class="section-title section-title-center">What Our Customers Say</h2>
-  <div class="reviews-grid">
-    <div class="review-card">
-      <div class="review-stars">★★★★★</div>
-      <p class="review-text">"{{REVIEW_1}}"</p>
-    </div>
-    <div class="review-card">
-      <div class="review-stars">★★★★★</div>
-      <p class="review-text">"{{REVIEW_2}}"</p>
-    </div>
-    <div class="review-card">
-      <div class="review-stars">★★★★★</div>
-      <p class="review-text">"{{REVIEW_3}}"</p>
+<section class="reviews">
+  <div class="reviews-inner">
+    <h2>What Our Customers Say</h2>
+    <div class="reviews-grid">
+      <div class="review-card">
+        <div class="stars">★★★★★</div>
+        <p class="review-text">"{{REVIEW_1_TEXT}}"</p>
+        <div class="review-author">— {{REVIEW_1_AUTHOR}}</div>
+      </div>
+      <div class="review-card">
+        <div class="stars">★★★★★</div>
+        <p class="review-text">"{{REVIEW_2_TEXT}}"</p>
+        <div class="review-author">— {{REVIEW_2_AUTHOR}}</div>
+      </div>
+      <div class="review-card">
+        <div class="stars">★★★★★</div>
+        <p class="review-text">"{{REVIEW_3_TEXT}}"</p>
+        <div class="review-author">— {{REVIEW_3_AUTHOR}}</div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- CONTACT -->
-<section class="section section-alt" id="contact">
-  <div class="accent-bar accent-bar-center"></div>
-  <h2 class="section-title section-title-center">Contact {{BUSINESS_NAME}}</h2>
-  <div class="contact-wrap">
-    <form id="contact-form">
-      <div class="form-group">
-        <input class="form-input" name="name" type="text" placeholder="Your Name" required>
-      </div>
-      <div class="form-group">
-        <input class="form-input" name="phone" type="tel" placeholder="Phone Number">
-      </div>
-      <div class="form-group">
-        <input class="form-input" name="email" type="email" placeholder="Email Address">
-      </div>
-      <div class="form-group">
-        <textarea class="form-input" name="message" rows="5" placeholder="How can we help you?" style="resize:vertical"></textarea>
-      </div>
+<section class="contact" id="contact">
+  <div class="contact-inner">
+    <h2>Get In Touch</h2>
+    <p class="contact-sub">We respond within 1 hour during business hours</p>
+    <form id="sf-contact-form">
+      <div class="form-group"><input type="text" name="name" placeholder="Your Name" required></div>
+      <div class="form-group"><input type="tel" name="phone" placeholder="Your Phone Number" required></div>
+      <div class="form-group"><input type="email" name="email" placeholder="Your Email (optional)"></div>
+      <div class="form-group"><textarea name="message" placeholder="How can we help you?"></textarea></div>
       <button type="submit" class="btn-submit">Send Message →</button>
     </form>
+    <div class="success-msg" id="sf-success">✅ Thanks! We'll be in touch soon.</div>
   </div>
 </section>
 
-<!-- FOOTER -->
 <footer class="footer">
-  <div class="footer-name">{{BUSINESS_NAME}}</div>
-  {{PHONE_FOOTER}}
-  {{EMAIL_FOOTER}}
-  {{ADDRESS_FOOTER}}
-  {{HOURS_FOOTER}}
-  <div class="footer-divider"></div>
-  <div class="footer-copy">&copy; {{YEAR}} {{BUSINESS_NAME}}. All rights reserved.</div>
+  <div class="footer-inner">
+    <div class="footer-name">{{BUSINESS_NAME}}</div>
+    <div class="footer-info">
+      <span>📞 <a href="tel:{{PHONE_RAW}}">{{PHONE}}</a></span>
+      {{EMAIL_LINE}}
+      {{ADDRESS_LINE}}
+      {{HOURS_LINE}}
+    </div>
+    {{SOCIAL_HTML}}
+    <div class="footer-bottom">© 2025 {{BUSINESS_NAME}} · Powered by SiteForge</div>
+  </div>
 </footer>
 
-<!-- FIXED CALL BUTTON -->
-{{CALL_BAR}}
+<a href="tel:{{PHONE_RAW}}" class="float-call">📞 Call {{BUSINESS_NAME}} Now</a>
 
 <script>
-(function () {
-  var f = document.getElementById('contact-form');
-  if (!f) return;
-  f.addEventListener('submit', function (e) {
+(function(){
+  var form = document.getElementById('sf-contact-form');
+  var success = document.getElementById('sf-success');
+  if(!form) return;
+  form.addEventListener('submit', function(e){
     e.preventDefault();
-    f.innerHTML = '<div style="padding:48px;text-align:center;font-size:20px;font-weight:700;">Thanks! We\'ll be in touch soon. ✅<\/div>';
+    var data = {
+      user_id: '{{USER_ID}}',
+      name: form.name.value,
+      phone: form.phone.value,
+      email: form.email.value,
+      message: form.message.value
+    };
+    fetch('{{SUPABASE_URL}}/rest/v1/leads', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': '{{SUPABASE_ANON_KEY}}',
+        'Authorization': 'Bearer {{SUPABASE_ANON_KEY}}'
+      },
+      body: JSON.stringify(data)
+    });
+    form.style.display = 'none';
+    success.style.display = 'block';
   });
-}());
+})();
 </script>
-
 </body>
 </html>
