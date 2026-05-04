@@ -86,6 +86,11 @@ export const handler = async (event) => {
       return ok({ answer })
     }
 
+    if (body.type === 'suggest') {
+      const suggestions = await handleSuggestIndustry(body)
+      return ok({ suggestions })
+    }
+
     return { statusCode: 400, body: JSON.stringify({ error: 'Unknown type' }) }
   } catch (err) {
     console.error('generate function error:', err)
@@ -281,6 +286,27 @@ Requirements:
     .replace(/^```[\w]*\s*/i, '').replace(/\s*```\s*$/i, '').trim()
   const docMatch = raw.match(/<!doctype\s+html[\s\S]*<\/html>/i)
   return docMatch ? docMatch[0] : raw
+}
+
+// ── Industry suggestions ──────────────────────────────────────────────────────
+
+async function handleSuggestIndustry({ businessName }) {
+  const message = await client.messages.create({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 80,
+    messages: [{
+      role: 'user',
+      content: `Based on the business name "${businessName}", suggest 3-4 short industry categories (1-3 words each). Return ONLY a JSON array, nothing else. Example: ["Landscaping","Floral Design","Garden Center"]. If the name is too generic or unclear, return ["Retail","Service Business","Restaurant","Contractor"].`,
+    }],
+  })
+
+  const raw = message.content[0].text.trim()
+  const match = raw.match(/\[[\s\S]*\]/)
+  try {
+    return JSON.parse(match ? match[0] : '[]')
+  } catch {
+    return ['Retail', 'Service Business', 'Restaurant', 'Contractor']
+  }
 }
 
 // ── Support chat ──────────────────────────────────────────────────────────────

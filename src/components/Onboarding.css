@@ -303,6 +303,61 @@
 .ob-field input::placeholder,
 .ob-field textarea::placeholder { color: #d1d5db; }
 
+/* ── Industry suggestion pills ───────────────────── */
+@keyframes ob-pill-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.ob-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+  animation: ob-pill-in 0.25s ease both;
+}
+
+.ob-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1.5px solid #e5e7eb;
+  background: #f9fafb;
+  color: #4b5563;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  white-space: nowrap;
+  min-height: 34px;
+}
+
+.ob-pill:hover {
+  border-color: #a78bfa;
+  background: #f5f3ff;
+  color: #6d28d9;
+}
+
+.ob-pill-active {
+  border-color: #7c3aed;
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
+/* spinner pulse on the label */
+@keyframes ob-suggest-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+.ob-suggest-spinner {
+  display: inline-block;
+  animation: ob-suggest-pulse 0.9s ease infinite;
+  margin-left: 4px;
+  color: #a78bfa;
+}
+
 /* ── Pricing screen ──────────────────────────────── */
 .ob-pricing-overlay {
   overflow-y: auto;

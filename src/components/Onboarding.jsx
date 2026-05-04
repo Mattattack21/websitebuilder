@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import './Onboarding.css'
-import { generateWebsite } from '../lib/generateWebsite'
+import { generateWebsite, suggestIndustries } from '../lib/generateWebsite'
 import { redirectToCheckout } from '../utils/stripe'
 
 const VIBES = [
@@ -10,8 +10,6 @@ const VIBES = [
   { id: 'exciting',    icon: '🚀',  name: 'Exciting',    desc: 'Energetic, dynamic, and fun' },
   { id: 'elegant',     icon: '💎',  name: 'Elegant',     desc: 'Refined, sophisticated, and luxurious' },
 ]
-
-const BUSINESS_TYPES = ['Contractor', 'Restaurant', 'Salon', 'Retail', 'Fitness', 'Medical', 'Other']
 
 const GEN_MESSAGES = [
   'Choosing your colors...',
@@ -48,6 +46,8 @@ export default function Onboarding({ onClose, onComplete, user }) {
   const [countdown, setCountdown]         = useState(14 * 60 + 59)
   const [checkoutLoading, setCheckoutLoading] = useState(false)
   const [checkoutError, setCheckoutError]     = useState(null)
+  const [industrySuggestions, setIndustrySuggestions] = useState([])
+  const [suggestingIndustry, setSuggestingIndustry]   = useState(false)
   const cancelledRef = useRef(false)
   const iframeRef    = useRef(null)
 
@@ -119,6 +119,14 @@ export default function Onboarding({ onClose, onComplete, user }) {
     document.body.style.overflow = 'hidden'
     return () => { document.body.style.overflow = '' }
   }, [])
+
+  async function handleNameBlur() {
+    if (!form.name.trim()) return
+    setSuggestingIndustry(true)
+    const suggestions = await suggestIndustries(form.name)
+    setIndustrySuggestions(suggestions)
+    setSuggestingIndustry(false)
+  }
 
   const formValid = form.name.trim() && form.type && form.city.trim() && form.state.trim()
   const canNext   = (step === 1 && vibe) || (step === 2 && formValid)
@@ -377,14 +385,33 @@ export default function Onboarding({ onClose, onComplete, user }) {
                     placeholder="e.g. Joe's Plumbing"
                     value={form.name}
                     onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                    onBlur={handleNameBlur}
                   />
                 </div>
                 <div className="ob-field">
-                  <label>Business Type</label>
-                  <select value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))}>
-                    <option value="">Select a type...</option>
-                    {BUSINESS_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
+                  <label>
+                    What industry are you in?
+                    {suggestingIndustry && <span className="ob-suggest-spinner"> ✦</span>}
+                  </label>
+                  <input
+                    placeholder="e.g. Plumbing, Bakery, Landscaping..."
+                    value={form.type}
+                    onChange={e => setForm(f => ({ ...f, type: e.target.value }))}
+                  />
+                  {industrySuggestions.length > 0 && (
+                    <div className="ob-pills">
+                      {industrySuggestions.map(s => (
+                        <button
+                          key={s}
+                          type="button"
+                          className={`ob-pill ${form.type === s ? 'ob-pill-active' : ''}`}
+                          onClick={() => setForm(f => ({ ...f, type: s }))}
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div className="ob-row">
                   <div className="ob-field">

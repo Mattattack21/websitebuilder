@@ -189,3 +189,16 @@ export async function askSupportQuestion(question, onChunk) {
   const { answer } = await callGenerate({ type: 'support', question })
   onChunk(answer)
 }
+
+// ── Industry suggestions ──────────────────────────────────────────────────────
+const DEFAULT_SUGGESTIONS = ['Retail', 'Service Business', 'Restaurant', 'Contractor']
+
+export async function suggestIndustries(businessName) {
+  if (!businessName || businessName.trim().length < 2) return DEFAULT_SUGGESTIONS
+  try {
+    const { suggestions } = await callGenerate({ type: 'suggest', businessName: businessName.trim() })
+    return Array.isArray(suggestions) && suggestions.length ? suggestions : DEFAULT_SUGGESTIONS
+  } catch {
+    return DEFAULT_SUGGESTIONS
+  }
+}
