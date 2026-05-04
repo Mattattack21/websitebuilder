@@ -8,6 +8,7 @@
 
 [functions."generate"]
   timeout = 60
+  included_files = ["src/templates/**"]
 
 [[headers]]
   for = "/*"

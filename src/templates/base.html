@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{BUSINESS_NAME}}</title>
+<style>
+:root {
+  {{CSS_VARS}}
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--bg);
+  padding-bottom: 68px;
+}
+
+a { color: inherit; text-decoration: none; }
+img { max-width: 100%; display: block; }
+
+/* ── NAV ── */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--surface);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: 60px;
+}
+.nav-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.nav-call {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--primary);
+  color: #fff;
+  padding: 0 18px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 14px;
+  white-space: nowrap;
+  min-height: 44px;
+  flex-shrink: 0;
+}
+
+/* ── HERO ── */
+.hero {
+  min-height: 100vh;
+  background: linear-gradient(160deg, var(--primary) 0%, var(--primary-dark) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 80px 24px 48px;
+}
+.hero-inner { max-width: 700px; width: 100%; }
+.hero-name {
+  font-size: clamp(34px, 9vw, 68px);
+  font-weight: 900;
+  color: #fff;
+  line-height: 1.08;
+  margin-bottom: 16px;
+  letter-spacing: -1px;
+}
+.hero-tagline {
+  font-size: clamp(17px, 3vw, 22px);
+  color: rgba(255,255,255,0.85);
+  margin-bottom: 40px;
+  line-height: 1.55;
+}
+.btn-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  color: var(--primary);
+  padding: 0 36px;
+  border-radius: 10px;
+  font-size: 18px;
+  font-weight: 800;
+  min-height: 56px;
+  transition: opacity 0.15s;
+}
+.btn-cta:hover { opacity: 0.9; }
+
+/* ── TRUST BAR ── */
+.trust-bar {
+  background: var(--primary);
+  padding: 16px 24px;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+}
+.trust-badge {
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+/* ── SECTIONS ── */
+.section { padding: 72px 24px; }
+.section-alt { background: var(--surface); }
+.section-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+.section-title {
+  font-size: clamp(26px, 5vw, 40px);
+  font-weight: 800;
+  color: var(--primary);
+  line-height: 1.18;
+  margin-bottom: 24px;
+}
+.section-title-center { text-align: center; }
+.accent-bar {
+  width: 48px;
+  height: 5px;
+  background: var(--accent);
+  border-radius: 3px;
+  margin-bottom: 16px;
+}
+.accent-bar-center { margin-left: auto; margin-right: auto; }
+
+/* ── ABOUT ── */
+.about-text {
+  font-size: 17px;
+  line-height: 1.85;
+  color: var(--text);
+  max-width: 680px;
+}
+
+/* ── SERVICES ── */
+.services-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 8px;
+}
+.service-card {
+  background: var(--bg);
+  border-radius: 16px;
+  padding: 32px 28px;
+  border-left: 5px solid var(--accent);
+}
+.service-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 10px;
+}
+.service-desc {
+  font-size: 16px;
+  color: var(--text);
+  line-height: 1.7;
+}
+
+/* ── REVIEWS ── */
+.reviews-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 8px;
+}
+.review-card {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+}
+.review-stars {
+  color: #f59e0b;
+  font-size: 20px;
+  margin-bottom: 12px;
+  letter-spacing: 2px;
+}
+.review-text {
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--text);
+  font-style: italic;
+}
+
+/* ── CONTACT ── */
+.contact-wrap { max-width: 560px; margin: 0 auto; }
+.form-group { margin-bottom: 16px; }
+.form-input {
+  width: 100%;
+  padding: 15px 18px;
+  font-size: 16px;
+  border: 2px solid rgba(128,128,128,0.2);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+  display: block;
+}
+.form-input:focus { border-color: var(--accent); }
+.btn-submit {
+  width: 100%;
+  padding: 0 24px;
+  font-size: 18px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  min-height: 56px;
+  transition: opacity 0.15s;
+  display: block;
+}
+.btn-submit:hover { opacity: 0.9; }
+
+/* ── FOOTER ── */
+.footer {
+  background: var(--primary-dark);
+  color: rgba(255,255,255,0.7);
+  padding: 56px 24px;
+  text-align: center;
+}
+.footer-name {
+  font-size: 22px;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 20px;
+}
+.footer-link {
+  color: rgba(255,255,255,0.7);
+  display: block;
+  margin-bottom: 8px;
+  font-size: 15px;
+}
+.footer-divider {
+  width: 48px;
+  height: 1px;
+  background: rgba(255,255,255,0.15);
+  margin: 24px auto;
+}
+.footer-copy { font-size: 13px; opacity: 0.4; }
+
+/* ── FIXED CALL BAR ── */
+.call-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 60px;
+  font-size: 17px;
+  font-weight: 800;
+  z-index: 200;
+  gap: 8px;
+}
+
+/* ── DESKTOP ── */
+@media (min-width: 768px) {
+  body { padding-bottom: 0; }
+
+  .services-grid { flex-direction: row; }
+  .service-card { flex: 1; min-width: 200px; }
+
+  .reviews-grid { flex-direction: row; }
+  .review-card { flex: 1; min-width: 200px; }
+
+  .call-bar {
+    left: auto;
+    right: 28px;
+    bottom: 28px;
+    border-radius: 999px;
+    width: auto;
+    padding: 0 28px;
+    box-shadow: 0 6px 28px rgba(0,0,0,0.25);
+    font-size: 15px;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <span class="nav-name">{{BUSINESS_NAME}}</span>
+  {{NAV_CALL}}
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <h1 class="hero-name">{{BUSINESS_NAME}}</h1>
+    <p class="hero-tagline">{{TAGLINE}}</p>
+    <a href="#contact" class="btn-cta">Get In Touch</a>
+  </div>
+</section>
+
+<!-- TRUST BAR -->
+<div class="trust-bar">
+  <span class="trust-badge">✓ Licensed &amp; Insured</span>
+  <span class="trust-badge">⭐ 5-Star Rated</span>
+  <span class="trust-badge">💰 Free Estimates</span>
+</div>
+
+<!-- ABOUT -->
+<section class="section">
+  <div class="accent-bar"></div>
+  <h2 class="section-title">About Us</h2>
+  <p class="about-text">{{ABOUT}}</p>
+</section>
+
+<!-- SERVICES -->
+<section class="section section-alt">
+  <div class="accent-bar accent-bar-center"></div>
+  <h2 class="section-title section-title-center">Our Services</h2>
+  <div class="services-grid">
+    <div class="service-card">
+      <div class="service-title">{{SERVICE_1_TITLE}}</div>
+      <div class="service-desc">{{SERVICE_1_DESC}}</div>
+    </div>
+    <div class="service-card">
+      <div class="service-title">{{SERVICE_2_TITLE}}</div>
+      <div class="service-desc">{{SERVICE_2_DESC}}</div>
+    </div>
+    <div class="service-card">
+      <div class="service-title">{{SERVICE_3_TITLE}}</div>
+      <div class="service-desc">{{SERVICE_3_DESC}}</div>
+    </div>
+  </div>
+</section>
+
+<!-- REVIEWS -->
+<section class="section">
+  <div class="accent-bar accent-bar-center"></div>
+  <h2 class="section-title section-title-center">What Our Customers Say</h2>
+  <div class="reviews-grid">
+    <div class="review-card">
+      <div class="review-stars">★★★★★</div>
+      <p class="review-text">"{{REVIEW_1}}"</p>
+    </div>
+    <div class="review-card">
+      <div class="review-stars">★★★★★</div>
+      <p class="review-text">"{{REVIEW_2}}"</p>
+    </div>
+    <div class="review-card">
+      <div class="review-stars">★★★★★</div>
+      <p class="review-text">"{{REVIEW_3}}"</p>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="section section-alt" id="contact">
+  <div class="accent-bar accent-bar-center"></div>
+  <h2 class="section-title section-title-center">Contact {{BUSINESS_NAME}}</h2>
+  <div class="contact-wrap">
+    <form id="contact-form">
+      <div class="form-group">
+        <input class="form-input" name="name" type="text" placeholder="Your Name" required>
+      </div>
+      <div class="form-group">
+        <input class="form-input" name="phone" type="tel" placeholder="Phone Number">
+      </div>
+      <div class="form-group">
+        <input class="form-input" name="email" type="email" placeholder="Email Address">
+      </div>
+      <div class="form-group">
+        <textarea class="form-input" name="message" rows="5" placeholder="How can we help you?" style="resize:vertical"></textarea>
+      </div>
+      <button type="submit" class="btn-submit">Send Message →</button>
+    </form>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-name">{{BUSINESS_NAME}}</div>
+  {{PHONE_FOOTER}}
+  {{EMAIL_FOOTER}}
+  {{ADDRESS_FOOTER}}
+  {{HOURS_FOOTER}}
+  <div class="footer-divider"></div>
+  <div class="footer-copy">&copy; {{YEAR}} {{BUSINESS_NAME}}. All rights reserved.</div>
+</footer>
+
+<!-- FIXED CALL BUTTON -->
+{{CALL_BAR}}
+
+<script>
+(function () {
+  var f = document.getElementById('contact-form');
+  if (!f) return;
+  f.addEventListener('submit', function (e) {
+    e.preventDefault();
+    f.innerHTML = '<div style="padding:48px;text-align:center;font-size:20px;font-weight:700;">Thanks! We\'ll be in touch soon. ✅<\/div>';
+  });
+}());
+</script>
+
+</body>
+</html>
