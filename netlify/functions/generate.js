@@ -208,7 +208,7 @@ Return exactly this JSON structure:
 function buildPage(theme, data, params) {
   const {
     businessName, phone, email, businessHours, address,
-    city, businessType,
+    city, state, businessType,
     facebook, instagram, telDigits,
     heroPhotoUrl,
   } = params
@@ -250,6 +250,7 @@ function buildPage(theme, data, params) {
     PHONE_RAW:         telDigits,
     PHONE:             phone || '',
     CITY:              city || '',
+    STATE:             state || '',
     INDUSTRY:          businessType || '',
     TAGLINE:           tagline,
     HERO_SUB:          heroSub || '',
@@ -308,10 +309,11 @@ async function handleGenerateWebsite({
   ])
 
   console.log('[SF-SERVER] Unsplash photos fetched:', photos.length)
+  console.log('[SF-SERVER] Hero photo URL:', photos[0] ?? 'none')
 
   return buildPage(themeVibe, data, {
     businessName, phone, email, businessHours, address,
-    city, businessType,
+    city, state, businessType,
     facebook, instagram, telDigits,
     heroPhotoUrl: photos[0] ?? null,
   })
