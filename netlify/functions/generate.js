@@ -228,7 +228,7 @@ function buildPage(theme, data, params) {
   const t = THEMES[theme] ?? THEMES.trustworthy
 
   const heroPhotoHtml = heroPhotoUrl
-    ? `<img class="photo-hero" src="${heroPhotoUrl}" alt="${businessName}" loading="lazy">`
+    ? `<img class="hero-bg" src="${heroPhotoUrl}" alt="${businessName}">`
     : ''
 
   const emailLine   = email         ? `<span>✉️ <a href="mailto:${email}">${email}</a></span>`  : ''
