@@ -22,61 +22,6 @@ const FONT_IMPORTS = {
   elegant:     "@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Libre+Baskerville:wght@400;700&display=swap');",
 }
 
-// ── Theme CSS variable sets ───────────────────────────────────────────────────
-
-const THEMES = {
-  trustworthy: {
-    primary:     '#1B3A6B',
-    primaryDark: '#0f2547',
-    accent:      '#2563eb',
-    text:        '#1e293b',
-    bg:          '#f8fafc',
-    surface:     '#ffffff',
-    headingFont: "'Playfair Display', Georgia, serif",
-    bodyFont:    "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-  },
-  bold: {
-    primary:     '#CC0000',
-    primaryDark: '#1a1a1a',
-    accent:      '#FF0000',
-    text:        '#f0f0f0',
-    bg:          '#000000',
-    surface:     '#111111',
-    headingFont: "'Oswald', sans-serif",
-    bodyFont:    "'Open Sans', system-ui, sans-serif",
-  },
-  warm: {
-    primary:     '#d4547a',
-    primaryDark: '#3d1a24',
-    accent:      '#FF69B4',
-    text:        '#5c2d3a',
-    bg:          '#FFFDD0',
-    surface:     '#fff0f3',
-    headingFont: "'Quicksand', 'Nunito', sans-serif",
-    bodyFont:    "'Nunito', system-ui, sans-serif",
-  },
-  exciting: {
-    primary:     '#FF6B35',
-    primaryDark: '#7a2500',
-    accent:      '#e6a800',
-    text:        '#1a0a00',
-    bg:          '#fff8f0',
-    surface:     '#ffffff',
-    headingFont: "'Montserrat', sans-serif",
-    bodyFont:    "'Raleway', system-ui, sans-serif",
-  },
-  elegant: {
-    primary:     '#C9A84C',
-    primaryDark: '#0a0a0a',
-    accent:      '#e8d5a3',
-    text:        '#d4c9b8',
-    bg:          '#1A1A1A',
-    surface:     '#242424',
-    headingFont: "'Cormorant Garamond', 'Libre Baskerville', serif",
-    bodyFont:    "'Libre Baskerville', Georgia, serif",
-  },
-}
-
 // ── Handler ───────────────────────────────────────────────────────────────────
 
 export const handler = async (event) => {
@@ -225,8 +170,6 @@ function buildPage(theme, data, params) {
     review3Text, review3Author,
   } = data
 
-  const t = THEMES[theme] ?? THEMES.trustworthy
-
   const heroPhotoHtml = heroPhotoUrl
     ? `<img class="hero-bg" src="${heroPhotoUrl}" alt="${businessName}">`
     : ''
@@ -244,9 +187,6 @@ function buildPage(theme, data, params) {
 
   const replacements = {
     BUSINESS_NAME:     businessName,
-    PRIMARY:           t.primary,
-    PRIMARY_DARK:      t.primaryDark,
-    ACCENT:            t.accent,
     PHONE_RAW:         telDigits,
     PHONE:             phone || '',
     CITY:              city || '',
