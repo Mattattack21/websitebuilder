@@ -101,10 +101,15 @@ export default function App() {
 
   // ── Session restore on mount ──────────────────────────────────────────────
   useEffect(() => {
-    // Safety net: if getSession hangs (stale token refresh, network issue),
-    // unblock the UI after 5 s so the landing page shows instead of the logo forever.
+    // If getSession hangs (stale token refresh, Supabase unreachable), abort
+    // after 5 s and show the landing page. The aborted flag ensures any
+    // late-resolving getSession/loadUserProfile result is silently discarded
+    // so it can't redirect the user back into a loading loop.
+    let aborted = false
+
     const fallback = setTimeout(() => {
       console.warn('[App] restoreSession timed out — unblocking UI')
+      aborted = true
       setInitializing(false)
     }, 5000)
 
@@ -112,6 +117,12 @@ export default function App() {
       try {
         console.log('[App] restoreSession: calling getSession')
         const { data, error: sessionError } = await supabase.auth.getSession()
+
+        if (aborted) {
+          console.warn('[App] restoreSession: result arrived after timeout — discarding')
+          return
+        }
+
         console.log('[App] restoreSession: getSession returned', { session: !!data?.session, sessionError })
 
         if (sessionError) {
@@ -130,12 +141,12 @@ export default function App() {
         setUser(sessionUser)
 
         const { hasPending } = await loadUserProfile(sessionUser.id)
-        if (hasPending) setShowFinishSetup(true)
+        if (!aborted && hasPending) setShowFinishSetup(true)
       } catch (err) {
-        console.error('[App] restoreSession: threw', err)
+        if (!aborted) console.error('[App] restoreSession: threw', err)
       } finally {
         clearTimeout(fallback)
-        setInitializing(false)
+        if (!aborted) setInitializing(false)
       }
     }
 
@@ -158,7 +169,7 @@ export default function App() {
       }
     })
 
-    return () => { clearTimeout(fallback); subscription.unsubscribe() }
+    return () => { aborted = true; clearTimeout(fallback); subscription.unsubscribe() }
   }, [])
 
   // ── Deploy to Netlify after any HTML update ───────────────────────────────
