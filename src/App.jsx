@@ -54,7 +54,7 @@ export default function App() {
       business_description: bData.businessDescription ?? null,
       setup_complete:       false,
       updated_at:           new Date().toISOString(),
-    }).catch(() => {})
+    }).then(null, () => {})
 
     return true
   }
@@ -208,7 +208,7 @@ export default function App() {
         state:                bData?.state               ?? null,
         business_description: bData?.businessDescription ?? null,
         updated_at:           new Date().toISOString(),
-      }).catch(() => {})
+      }).then(null, () => {})
     }
 
     try {
