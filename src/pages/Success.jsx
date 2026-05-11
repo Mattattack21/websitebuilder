@@ -6,18 +6,17 @@ import './Success.css'
 async function markSubscribed(userId) {
   console.log('[Success] markSubscribed: start, userId=', userId)
   try {
-    const { error } = await supabase.from('user_profiles').upsert({
-      id: userId,
-      is_subscribed: true,
-      updated_at: new Date().toISOString(),
-    })
-    if (error) {
-      console.error('[Success] markSubscribed: Supabase error', error)
-    } else {
-      console.log('[Success] markSubscribed: success')
-    }
+    await Promise.race([
+      supabase.from('user_profiles').upsert({
+        id: userId,
+        is_subscribed: true,
+        updated_at: new Date().toISOString(),
+      }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000)),
+    ])
+    console.log('[Success] markSubscribed: success')
   } catch (err) {
-    console.error('[Success] markSubscribed: threw', err)
+    console.error('[Success] markSubscribed: threw or timed out', err.message)
   }
 }
 
@@ -84,22 +83,27 @@ export default function Success() {
     }
     setLoading(true)
     setError(null)
-    console.log('[Success] handleSignup: calling signUp for', email)
-    const { data, error: err } = await supabase.auth.signUp({ email, password })
-    console.log('[Success] handleSignup: signUp result', { user: !!data?.user, err })
-    if (err) {
-      console.error('[Success] handleSignup: error', err)
-      setError(err.message)
-      setLoading(false)
-      return
-    }
-    if (data.user) {
-      await markSubscribed(data.user.id)
-      console.log('[Success] handleSignup: navigating to /dashboard')
-      navigate('/dashboard', { replace: true })
-    } else {
-      console.warn('[Success] handleSignup: no user returned after signUp — email confirmation may be required')
-      setError('Check your email for a confirmation link.')
+    try {
+      console.log('[Success] handleSignup: calling signUp for', email)
+      const { data, error: err } = await supabase.auth.signUp({ email, password })
+      console.log('[Success] handleSignup: signUp result', { user: !!data?.user, err })
+      if (err) {
+        console.error('[Success] handleSignup: error', err)
+        setError(err.message)
+        return
+      }
+      if (data?.user) {
+        await markSubscribed(data.user.id)
+        console.log('[Success] handleSignup: navigating to /dashboard')
+        navigate('/dashboard', { replace: true })
+      } else {
+        console.warn('[Success] handleSignup: no user — email confirmation may be required')
+        setError('Check your email for a confirmation link.')
+      }
+    } catch (err) {
+      console.error('[Success] handleSignup: threw', err)
+      setError('Something went wrong. Please try again.')
+    } finally {
       setLoading(false)
     }
   }
@@ -108,19 +112,25 @@ export default function Success() {
     e.preventDefault()
     setLoading(true)
     setError(null)
-    console.log('[Success] handleLogin: calling signInWithPassword for', email)
-    const { data, error: err } = await supabase.auth.signInWithPassword({ email, password })
-    console.log('[Success] handleLogin: result', { user: !!data?.user, err })
-    if (err) {
-      console.error('[Success] handleLogin: error', err)
-      setError(err.message)
+    try {
+      console.log('[Success] handleLogin: calling signInWithPassword for', email)
+      const { data, error: err } = await supabase.auth.signInWithPassword({ email, password })
+      console.log('[Success] handleLogin: result', { user: !!data?.user, err })
+      if (err) {
+        console.error('[Success] handleLogin: error', err)
+        setError(err.message)
+        return
+      }
+      if (data?.user) {
+        await markSubscribed(data.user.id)
+        console.log('[Success] handleLogin: navigating to /dashboard')
+        navigate('/dashboard', { replace: true })
+      }
+    } catch (err) {
+      console.error('[Success] handleLogin: threw', err)
+      setError('Something went wrong. Please try again.')
+    } finally {
       setLoading(false)
-      return
-    }
-    if (data.user) {
-      await markSubscribed(data.user.id)
-      console.log('[Success] handleLogin: navigating to /dashboard')
-      navigate('/dashboard', { replace: true })
     }
   }
 
