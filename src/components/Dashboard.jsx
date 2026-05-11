@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../utils/supabase'
 import { updateWebsite, askSupportQuestion } from '../lib/generateWebsite'
+import { redirectToPortal } from '../utils/stripe'
 import './Dashboard.css'
 
 const TABS = [
@@ -33,7 +34,7 @@ const FAQS = [
   },
 ]
 
-export default function Dashboard({ user, generatedHtml, regenerating, onSiteUpdate, onChangeTheme, onRegenerate }) {
+export default function Dashboard({ user, generatedHtml, regenerating, onSiteUpdate, onChangeTheme, onRegenerate, stripeCustomerId }) {
   const [activeTab, setActiveTab]   = useState('website')
   const [siteHtml, setSiteHtml]     = useState(generatedHtml)
   const [siteUrl, setSiteUrl]       = useState(null)
@@ -85,6 +86,19 @@ export default function Dashboard({ user, generatedHtml, regenerating, onSiteUpd
   const [updating, setUpdating] = useState(false)
   const [updateProgress, setUpdateProgress] = useState(0)
   const [updateError, setUpdateError] = useState(null)
+
+  // Billing portal
+  const [portalLoading, setPortalLoading] = useState(false)
+
+  async function handleOpenPortal() {
+    if (!stripeCustomerId || portalLoading) return
+    setPortalLoading(true)
+    try {
+      await redirectToPortal(stripeCustomerId)
+    } catch {
+      setPortalLoading(false)
+    }
+  }
 
   // Help chat
   const [helpQuestion, setHelpQuestion] = useState('')
@@ -353,12 +367,20 @@ export default function Dashboard({ user, generatedHtml, regenerating, onSiteUpd
                 <span>Next billing date</span>
                 <strong>—</strong>
               </div>
-              <button className="dash-action-btn primary" onClick={() => alert('Billing portal coming soon!')}>
-                Manage Billing
+              <button
+                className="dash-action-btn primary"
+                onClick={handleOpenPortal}
+                disabled={!stripeCustomerId || portalLoading}
+              >
+                {portalLoading ? 'Opening...' : 'Manage Billing'}
               </button>
             </div>
 
-            <button className="dash-cancel-link" onClick={() => alert('Cancellation flow coming soon!')}>
+            <button
+              className="dash-cancel-link"
+              onClick={handleOpenPortal}
+              disabled={!stripeCustomerId || portalLoading}
+            >
               Cancel Subscription
             </button>
           </div>

@@ -3,20 +3,26 @@ import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import './App.css'
 import { supabase } from './utils/supabase'
 import { generateWebsite } from './lib/generateWebsite'
+import { redirectToCheckout } from './utils/stripe'
 import Onboarding from './components/Onboarding'
 import Dashboard from './components/Dashboard'
 import FinishSetup from './components/FinishSetup'
+import Auth from './components/Auth'
 import Success from './pages/Success'
 
 export default function App() {
   const navigate = useNavigate()
-  const [initializing, setInitializing]   = useState(true)
+  const [initializing, setInitializing]     = useState(true)
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [showFinishSetup, setShowFinishSetup] = useState(false)
-  const [regenerating, setRegenerating]   = useState(false)
-  const [user, setUser]                   = useState(null)
-  const [siteHtml, setSiteHtml]           = useState(null)
-  const [businessData, setBusinessData]   = useState(null)
+  const [showAuth, setShowAuth]             = useState(false)
+  const [authInitialTab, setAuthInitialTab] = useState('login')
+  const [regenerating, setRegenerating]     = useState(false)
+  const [user, setUser]                     = useState(null)
+  const [siteHtml, setSiteHtml]             = useState(null)
+  const [businessData, setBusinessData]     = useState(null)
+  const [isSubscribed, setIsSubscribed]     = useState(null)
+  const [stripeCustomerId, setStripeCustomerId] = useState(null)
 
   // ── Load website + business data saved to localStorage before Stripe redirect ──
   // Returns true if pending data was found and loaded.
@@ -50,6 +56,45 @@ export default function App() {
     return true
   }
 
+  async function loadUserProfile(userId) {
+    const { data: profile, error } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('id', userId)
+      .single()
+
+    if (error && error.code !== 'PGRST116') {
+      console.error('Profile fetch error:', error)
+    }
+
+    if (profile) {
+      setSiteHtml(profile.site_html ?? null)
+      setIsSubscribed(profile.is_subscribed ?? false)
+      setStripeCustomerId(profile.stripe_customer_id ?? null)
+      setBusinessData({
+        themeVibe:           profile.theme_vibe,
+        businessName:        profile.business_name,
+        businessType:        profile.business_type,
+        city:                profile.city,
+        state:               profile.state,
+        businessDescription: profile.business_description,
+        phone:               profile.phone,
+        email:               profile.display_email,
+        businessHours:       profile.hours,
+        address:             profile.address,
+        facebook:            profile.facebook_url,
+        instagram:           profile.instagram_url,
+      })
+      if (!profile.setup_complete) setShowFinishSetup(true)
+      return { hasProfile: true, hasPending: false }
+    }
+
+    // New user with no profile — check for data saved before Stripe redirect
+    const hasPending = await loadPendingData(userId)
+    setIsSubscribed(false)
+    return { hasProfile: false, hasPending }
+  }
+
   // ── Session restore on mount ──────────────────────────────────────────────
   useEffect(() => {
     async function restoreSession() {
@@ -60,38 +105,8 @@ export default function App() {
         const sessionUser = session.user
         setUser(sessionUser)
 
-        const { data: profile, error } = await supabase
-          .from('user_profiles')
-          .select('*')
-          .eq('id', sessionUser.id)
-          .single()
-
-        if (error && error.code !== 'PGRST116') {
-          console.error('Profile fetch error:', error)
-        }
-
-        if (profile) {
-          setSiteHtml(profile.site_html ?? null)
-          setBusinessData({
-            themeVibe:           profile.theme_vibe,
-            businessName:        profile.business_name,
-            businessType:        profile.business_type,
-            city:                profile.city,
-            state:               profile.state,
-            businessDescription: profile.business_description,
-            phone:               profile.phone,
-            email:               profile.display_email,
-            businessHours:       profile.hours,
-            address:             profile.address,
-            facebook:            profile.facebook_url,
-            instagram:           profile.instagram_url,
-          })
-          if (!profile.setup_complete) setShowFinishSetup(true)
-        } else {
-          // New user with no profile — check for data saved before Stripe redirect
-          const hasPending = await loadPendingData(sessionUser.id)
-          if (hasPending) setShowFinishSetup(true)
-        }
+        const { hasPending } = await loadUserProfile(sessionUser.id)
+        if (hasPending) setShowFinishSetup(true)
       } catch (err) {
         console.error('Session restore error:', err)
       } finally {
@@ -105,12 +120,15 @@ export default function App() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
         setUser(session.user)
-        const hasPending = await loadPendingData(session.user.id)
+        setShowAuth(false)
+        const { hasPending } = await loadUserProfile(session.user.id)
         if (hasPending) setShowFinishSetup(true)
       } else if (event === 'SIGNED_OUT') {
         setUser(null)
         setSiteHtml(null)
         setBusinessData(null)
+        setIsSubscribed(null)
+        setStripeCustomerId(null)
       }
     })
 
@@ -185,6 +203,15 @@ export default function App() {
     )
   }
 
+  // ── Subscription gate ─────────────────────────────────────────────────────
+  const subscriptionGate = isSubscribed === null
+    ? (
+      <div className="app-init">
+        <span className="app-init-logo">siteforge<span>.</span></span>
+      </div>
+    )
+    : <Navigate to="/pricing" replace />
+
   // ── Authenticated: dashboard + modals ─────────────────────────────────────
   const dashboardView = (
     <>
@@ -195,6 +222,7 @@ export default function App() {
         onSiteUpdate={(html) => setSiteHtml(html)}
         onChangeTheme={() => setShowOnboarding(true)}
         onRegenerate={businessData?.businessName ? handleRegenerate : null}
+        stripeCustomerId={stripeCustomerId}
       />
       {showFinishSetup && (
         <FinishSetup
@@ -220,6 +248,12 @@ export default function App() {
       <main className="hero">
         <nav className="nav">
           <span className="logo">siteforge<span className="logo-dot">.</span></span>
+          <button
+            className="nav-login-btn"
+            onClick={() => { setAuthInitialTab('login'); setShowAuth(true) }}
+          >
+            Log In
+          </button>
         </nav>
 
         <div className="hero-content">
@@ -242,15 +276,49 @@ export default function App() {
           onComplete={handleComplete}
         />
       )}
+
+      {showAuth && (
+        <Auth
+          initialTab={authInitialTab}
+          onSuccess={() => setShowAuth(false)}
+          onBack={() => setShowAuth(false)}
+        />
+      )}
     </>
   )
+
+  // ── Pricing page (for authenticated unsubscribed users) ───────────────────
+  const pricingView = user ? (
+    <main className="hero">
+      <nav className="nav">
+        <span className="logo">siteforge<span className="logo-dot">.</span></span>
+      </nav>
+      <div className="hero-content">
+        <div className="badge">One More Step</div>
+        <h1>Subscribe to <span className="gradient-text">Activate Your Website</span></h1>
+        <p className="subheadline">$19.99/month — cancel anytime.</p>
+        <button className="cta-btn" onClick={() => redirectToCheckout(user.id, user.email)}>
+          Subscribe Now <span className="cta-arrow">→</span>
+        </button>
+      </div>
+      <div className="glow glow-1" />
+      <div className="glow glow-2" />
+    </main>
+  ) : <Navigate to="/" replace />
 
   return (
     <Routes>
       <Route path="/success" element={<Success />} />
+      <Route path="/pricing" element={pricingView} />
       <Route
         path="/dashboard"
-        element={user ? dashboardView : <Navigate to="/" replace />}
+        element={
+          !user
+            ? <Navigate to="/" replace />
+            : isSubscribed
+              ? dashboardView
+              : subscriptionGate
+        }
       />
       <Route
         path="*"

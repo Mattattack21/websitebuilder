@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { supabase } from '../utils/supabase'
 import './Auth.css'
 
-export default function Auth({ onSuccess, onBack }) {
-  const [tab, setTab] = useState('signup')
+export default function Auth({ onSuccess, onBack, initialTab }) {
+  const [tab, setTab] = useState(initialTab ?? 'signup')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
