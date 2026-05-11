@@ -101,19 +101,40 @@ export default function App() {
 
   // ── Session restore on mount ──────────────────────────────────────────────
   useEffect(() => {
+    // Safety net: if getSession hangs (stale token refresh, network issue),
+    // unblock the UI after 5 s so the landing page shows instead of the logo forever.
+    const fallback = setTimeout(() => {
+      console.warn('[App] restoreSession timed out — unblocking UI')
+      setInitializing(false)
+    }, 5000)
+
     async function restoreSession() {
       try {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (!session?.user) return
+        console.log('[App] restoreSession: calling getSession')
+        const { data, error: sessionError } = await supabase.auth.getSession()
+        console.log('[App] restoreSession: getSession returned', { session: !!data?.session, sessionError })
 
+        if (sessionError) {
+          console.error('[App] restoreSession: session error', sessionError)
+          return
+        }
+
+        const session = data?.session
+        if (!session?.user) {
+          console.log('[App] restoreSession: no active session')
+          return
+        }
+
+        console.log('[App] restoreSession: session found for', session.user.email)
         const sessionUser = session.user
         setUser(sessionUser)
 
         const { hasPending } = await loadUserProfile(sessionUser.id)
         if (hasPending) setShowFinishSetup(true)
       } catch (err) {
-        console.error('Session restore error:', err)
+        console.error('[App] restoreSession: threw', err)
       } finally {
+        clearTimeout(fallback)
         setInitializing(false)
       }
     }
@@ -137,7 +158,7 @@ export default function App() {
       }
     })
 
-    return () => subscription.unsubscribe()
+    return () => { clearTimeout(fallback); subscription.unsubscribe() }
   }, [])
 
   // ── Deploy to Netlify after any HTML update ───────────────────────────────
