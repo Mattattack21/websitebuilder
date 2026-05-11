@@ -85,7 +85,10 @@ export default function Success() {
     setError(null)
     try {
       console.log('[Success] handleSignup: calling signUp for', email)
-      const { data, error: err } = await supabase.auth.signUp({ email, password })
+      const { data, error: err } = await Promise.race([
+        supabase.auth.signUp({ email, password }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Request timed out — please try again.')), 10000)),
+      ])
       console.log('[Success] handleSignup: signUp result', { user: !!data?.user, err })
       if (err) {
         console.error('[Success] handleSignup: error', err)
@@ -114,7 +117,10 @@ export default function Success() {
     setError(null)
     try {
       console.log('[Success] handleLogin: calling signInWithPassword for', email)
-      const { data, error: err } = await supabase.auth.signInWithPassword({ email, password })
+      const { data, error: err } = await Promise.race([
+        supabase.auth.signInWithPassword({ email, password }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Request timed out — please try again.')), 10000)),
+      ])
       console.log('[Success] handleLogin: result', { user: !!data?.user, err })
       if (err) {
         console.error('[Success] handleLogin: error', err)
