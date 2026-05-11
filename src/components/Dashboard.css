@@ -605,6 +605,47 @@
   margin: 0;
 }
 
+/* ── Live site status bar ────────────────────────── */
+.dash-site-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: #f9f7ff;
+  border: 1.5px solid #ede9fe;
+  border-radius: 12px;
+  font-size: 14px;
+  color: #6b7280;
+  flex-wrap: wrap;
+}
+.dash-site-status.live {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #374151;
+}
+.dash-site-live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #16a34a;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 3px #dcfce7;
+}
+.dash-site-url {
+  flex: 1;
+  font-size: 13px;
+  color: #4b5563;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.dash-site-btn {
+  flex-shrink: 0;
+  font-size: 13px;
+  padding: 6px 14px;
+}
+
 /* ── Mobile ──────────────────────────────────────── */
 @media (max-width: 600px) {
   .dash-nav { padding: 14px 18px; }

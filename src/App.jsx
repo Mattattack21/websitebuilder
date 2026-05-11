@@ -4,6 +4,7 @@ import './App.css'
 import { supabase } from './utils/supabase'
 import { generateWebsite } from './lib/generateWebsite'
 import { redirectToCheckout } from './utils/stripe'
+import { deployWebsite } from './utils/deploy'
 import Onboarding from './components/Onboarding'
 import Dashboard from './components/Dashboard'
 import FinishSetup from './components/FinishSetup'
@@ -23,6 +24,8 @@ export default function App() {
   const [businessData, setBusinessData]     = useState(null)
   const [isSubscribed, setIsSubscribed]     = useState(null)
   const [stripeCustomerId, setStripeCustomerId] = useState(null)
+  const [siteUrl, setSiteUrl]               = useState(null)
+  const [deploying, setDeploying]           = useState(false)
 
   // ── Load website + business data saved to localStorage before Stripe redirect ──
   // Returns true if pending data was found and loaded.
@@ -71,6 +74,7 @@ export default function App() {
       setSiteHtml(profile.site_html ?? null)
       setIsSubscribed(profile.is_subscribed ?? false)
       setStripeCustomerId(profile.stripe_customer_id ?? null)
+      setSiteUrl(profile.site_url ?? null)
       setBusinessData({
         themeVibe:           profile.theme_vibe,
         businessName:        profile.business_name,
@@ -129,11 +133,28 @@ export default function App() {
         setBusinessData(null)
         setIsSubscribed(null)
         setStripeCustomerId(null)
+        setSiteUrl(null)
       }
     })
 
     return () => subscription.unsubscribe()
   }, [])
+
+  // ── Deploy to Netlify after any HTML update ───────────────────────────────
+  async function triggerDeploy(html, currentUser, bData) {
+    const uid = (currentUser ?? user)?.id
+    const name = (bData ?? businessData)?.businessName
+    if (!uid || !html) return
+    setDeploying(true)
+    try {
+      const url = await deployWebsite(html, uid, name)
+      setSiteUrl(url)
+    } catch (err) {
+      console.error('Deploy failed:', err)
+    } finally {
+      setDeploying(false)
+    }
+  }
 
   // ── Called by Onboarding for authenticated users (theme change) ───────────
   async function handleComplete(existingUser, html, bData) {
@@ -168,6 +189,8 @@ export default function App() {
     } catch {
       setShowFinishSetup(true)
     }
+
+    triggerDeploy(html, existingUser, bData)
   }
 
   // ── Called by FinishSetup on completion ───────────────────────────────────
@@ -175,6 +198,7 @@ export default function App() {
     setSiteHtml(updatedHtml)
     if (combinedData) setBusinessData(combinedData)
     setShowFinishSetup(false)
+    if (updatedHtml) triggerDeploy(updatedHtml, user, combinedData)
   }
 
   // ── Regenerate from saved profile ─────────────────────────────────────────
@@ -187,6 +211,7 @@ export default function App() {
     try {
       const html = await generateWebsite(businessData, user, () => {})
       setSiteHtml(html)
+      triggerDeploy(html, user, businessData)
     } catch (err) {
       console.error('Regeneration failed:', err)
     } finally {
@@ -219,10 +244,12 @@ export default function App() {
         user={user}
         generatedHtml={siteHtml}
         regenerating={regenerating}
-        onSiteUpdate={(html) => setSiteHtml(html)}
+        onSiteUpdate={(html) => { setSiteHtml(html); triggerDeploy(html, user, businessData) }}
         onChangeTheme={() => setShowOnboarding(true)}
         onRegenerate={businessData?.businessName ? handleRegenerate : null}
         stripeCustomerId={stripeCustomerId}
+        siteUrl={siteUrl}
+        deploying={deploying}
       />
       {showFinishSetup && (
         <FinishSetup

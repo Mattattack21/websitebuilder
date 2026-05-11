@@ -34,7 +34,7 @@ const FAQS = [
   },
 ]
 
-export default function Dashboard({ user, generatedHtml, regenerating, onSiteUpdate, onChangeTheme, onRegenerate, stripeCustomerId }) {
+export default function Dashboard({ user, generatedHtml, regenerating, onSiteUpdate, onChangeTheme, onRegenerate, stripeCustomerId, siteUrl, deploying }) {
   const [activeTab, setActiveTab]   = useState('website')
   const [siteHtml, setSiteHtml]     = useState(generatedHtml)
   const [siteUrl, setSiteUrl]       = useState(null)
@@ -86,6 +86,17 @@ export default function Dashboard({ user, generatedHtml, regenerating, onSiteUpd
   const [updating, setUpdating] = useState(false)
   const [updateProgress, setUpdateProgress] = useState(0)
   const [updateError, setUpdateError] = useState(null)
+
+  // Copy link
+  const [copied, setCopied] = useState(false)
+
+  function handleCopyLink() {
+    if (!siteUrl) return
+    navigator.clipboard.writeText(siteUrl).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }
 
   // Billing portal
   const [portalLoading, setPortalLoading] = useState(false)
@@ -204,6 +215,29 @@ export default function Dashboard({ user, generatedHtml, regenerating, onSiteUpd
                 ✏️ Update My Content
               </button>
             </div>
+
+            {deploying ? (
+              <div className="dash-site-status">
+                <div className="dash-regen-spinner" />
+                <span>Publishing your site...</span>
+              </div>
+            ) : siteUrl ? (
+              <div className="dash-site-status live">
+                <span className="dash-site-live-dot" />
+                <span className="dash-site-url">{siteUrl}</span>
+                <a
+                  href={siteUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="dash-action-btn secondary dash-site-btn"
+                >
+                  View Live Site ↗
+                </a>
+                <button className="dash-action-btn secondary dash-site-btn" onClick={handleCopyLink}>
+                  {copied ? 'Copied!' : 'Copy Link'}
+                </button>
+              </div>
+            ) : null}
 
             {showUpdatePanel && (
               <div className="dash-update-panel">
