@@ -362,16 +362,17 @@
 .ob-pricing-overlay {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  display: block; /* override inherited flex — block scroll containers handle overflow-y reliably */
 }
 
 .ob-pricing-scroll {
   min-height: 100%;
   display: flex;
-  flex-direction: column;   /* column so margin:auto on child works correctly */
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
   padding: 24px;
   box-sizing: border-box;
-  /* No justify-content:center — that clips the top when card overflows viewport */
 }
 
 .ob-pricing-card {
@@ -384,7 +385,6 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  margin: auto 0; /* centers vertically when space allows; collapses to 0 on overflow so top is always reachable */
 }
 
 .ob-pricing-badge {
