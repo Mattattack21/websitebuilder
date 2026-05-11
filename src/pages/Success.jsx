@@ -4,13 +4,21 @@ import { supabase } from '../utils/supabase'
 import './Success.css'
 
 async function markSubscribed(userId) {
+  console.log('[Success] markSubscribed: start, userId=', userId)
   try {
-    await supabase.from('user_profiles').upsert({
+    const { error } = await supabase.from('user_profiles').upsert({
       id: userId,
       is_subscribed: true,
       updated_at: new Date().toISOString(),
     })
-  } catch { /* non-blocking */ }
+    if (error) {
+      console.error('[Success] markSubscribed: Supabase error', error)
+    } else {
+      console.log('[Success] markSubscribed: success')
+    }
+  } catch (err) {
+    console.error('[Success] markSubscribed: threw', err)
+  }
 }
 
 export default function Success() {
@@ -23,18 +31,49 @@ export default function Success() {
   const [loading, setLoading]             = useState(false)
   const [error, setError]                 = useState(null)
 
-  // On mount — if already logged in, mark subscribed and go straight to dashboard
+  // On mount — if already logged in, mark subscribed and go to dashboard.
+  // Falls back to showing the signup form after 5 seconds so the page never hangs.
   useEffect(() => {
+    console.log('[Success] mount, url=', window.location.href)
+
+    // 5-second safety net — if getSession hangs or throws, show the form anyway
+    const fallback = setTimeout(() => {
+      console.warn('[Success] 5s timeout reached — forcing signup form visible')
+      setChecking(false)
+    }, 5000)
+
     async function checkSession() {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session?.user) {
-        await markSubscribed(session.user.id)
-        navigate('/dashboard', { replace: true })
-      } else {
+      try {
+        console.log('[Success] checkSession: calling supabase.auth.getSession')
+        const { data, error: sessionError } = await supabase.auth.getSession()
+        console.log('[Success] checkSession: getSession returned', { session: !!data?.session, sessionError })
+
+        if (sessionError) {
+          console.error('[Success] checkSession: session error', sessionError)
+          setChecking(false)
+          return
+        }
+
+        const session = data?.session
+        if (session?.user) {
+          console.log('[Success] checkSession: active session found for', session.user.email)
+          await markSubscribed(session.user.id)
+          console.log('[Success] checkSession: navigating to /dashboard')
+          navigate('/dashboard', { replace: true })
+        } else {
+          console.log('[Success] checkSession: no active session — showing signup form')
+          setChecking(false)
+        }
+      } catch (err) {
+        console.error('[Success] checkSession: threw', err)
         setChecking(false)
+      } finally {
+        clearTimeout(fallback)
       }
     }
+
     checkSession()
+    return () => clearTimeout(fallback)
   }, [navigate])
 
   async function handleSignup(e) {
@@ -45,15 +84,23 @@ export default function Success() {
     }
     setLoading(true)
     setError(null)
+    console.log('[Success] handleSignup: calling signUp for', email)
     const { data, error: err } = await supabase.auth.signUp({ email, password })
+    console.log('[Success] handleSignup: signUp result', { user: !!data?.user, err })
     if (err) {
+      console.error('[Success] handleSignup: error', err)
       setError(err.message)
       setLoading(false)
       return
     }
     if (data.user) {
       await markSubscribed(data.user.id)
+      console.log('[Success] handleSignup: navigating to /dashboard')
       navigate('/dashboard', { replace: true })
+    } else {
+      console.warn('[Success] handleSignup: no user returned after signUp — email confirmation may be required')
+      setError('Check your email for a confirmation link.')
+      setLoading(false)
     }
   }
 
@@ -61,13 +108,18 @@ export default function Success() {
     e.preventDefault()
     setLoading(true)
     setError(null)
+    console.log('[Success] handleLogin: calling signInWithPassword for', email)
     const { data, error: err } = await supabase.auth.signInWithPassword({ email, password })
+    console.log('[Success] handleLogin: result', { user: !!data?.user, err })
     if (err) {
+      console.error('[Success] handleLogin: error', err)
       setError(err.message)
       setLoading(false)
       return
     }
     if (data.user) {
+      await markSubscribed(data.user.id)
+      console.log('[Success] handleLogin: navigating to /dashboard')
       navigate('/dashboard', { replace: true })
     }
   }
