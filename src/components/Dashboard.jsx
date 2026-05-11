@@ -37,7 +37,7 @@ const FAQS = [
 export default function Dashboard({ user, generatedHtml, regenerating, onSiteUpdate, onChangeTheme, onRegenerate, stripeCustomerId, siteUrl, deploying }) {
   const [activeTab, setActiveTab]   = useState('website')
   const [siteHtml, setSiteHtml]     = useState(generatedHtml)
-  const [siteUrl, setSiteUrl]       = useState(null)
+  const [blobUrl, setBlobUrl]       = useState(null)
   const siteUrlRef                  = useRef(null)
 
   // Create a blob URL whenever siteHtml changes; revoke the previous one
@@ -47,7 +47,7 @@ export default function Dashboard({ user, generatedHtml, regenerating, onSiteUpd
     const url  = URL.createObjectURL(blob)
     if (siteUrlRef.current) URL.revokeObjectURL(siteUrlRef.current)
     siteUrlRef.current = url
-    setSiteUrl(url)
+    setBlobUrl(url)
     return () => {
       URL.revokeObjectURL(url)
       siteUrlRef.current = null
@@ -275,8 +275,8 @@ export default function Dashboard({ user, generatedHtml, regenerating, onSiteUpd
             {siteHtml ? (
               <div className="dash-iframe-wrap">
                 <iframe
-                  key={siteUrl}
-                  src={siteUrl}
+                  key={blobUrl}
+                  src={blobUrl}
                   title="Your website preview"
                 />
               </div>
