@@ -361,16 +361,17 @@
 /* ── Pricing screen ──────────────────────────────── */
 .ob-pricing-overlay {
   overflow-y: auto;
-  /* No flex centering here — centering is handled by ob-pricing-scroll */
+  -webkit-overflow-scrolling: touch;
 }
 
 .ob-pricing-scroll {
   min-height: 100%;
   display: flex;
+  flex-direction: column;   /* column so margin:auto on child works correctly */
   align-items: center;
-  justify-content: center;
   padding: 24px;
   box-sizing: border-box;
+  /* No justify-content:center — that clips the top when card overflows viewport */
 }
 
 .ob-pricing-card {
@@ -383,6 +384,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  margin: auto 0; /* centers vertically when space allows; collapses to 0 on overflow so top is always reachable */
 }
 
 .ob-pricing-badge {
@@ -775,18 +777,26 @@
   .ob-preview-subtitle { font-size: 12px; padding: 7px 16px; }
 
   /* Pricing screen */
-  .ob-pricing-overlay { padding: 16px; }
-  .ob-pricing-card { border-radius: 20px; }
-  .ob-pricing-header { padding: 20px 20px 18px; }
-  .ob-pricing-main-price { font-size: 44px; letter-spacing: -2px; }
-  .ob-pricing-features { padding: 18px 20px 4px; gap: 10px; }
-  .ob-pricing-fine { padding: 16px 20px 0; }
-  .ob-pricing-countdown { margin: 14px 20px 0; }
+  .ob-pricing-scroll { padding: 12px 16px 20px; }
+  .ob-pricing-card { border-radius: 18px; margin: 0; }
+  .ob-pricing-badge { font-size: 12px; padding: 9px 16px; }
+  .ob-pricing-header { padding: 18px 20px 14px; }
+  .ob-pricing-crossed-prices { gap: 12px; margin-bottom: 6px; }
+  .ob-pricing-cross { font-size: 15px; }
+  .ob-pricing-main-price { font-size: 40px; letter-spacing: -2px; }
+  .ob-pricing-period { font-size: 16px; }
+  .ob-pricing-billing { font-size: 12px; }
+  .ob-pricing-features { padding: 14px 20px 2px; gap: 8px; }
+  .ob-pricing-features li { font-size: 13px; gap: 9px; }
+  .ob-pricing-fine { padding: 12px 20px 0; font-size: 12px; }
+  .ob-pricing-countdown { margin: 10px 20px 0; padding: 9px 14px; font-size: 12px; }
+  .ob-pricing-countdown strong { font-size: 13px; }
+  .ob-countdown-icon { font-size: 13px; }
   .ob-pricing-cta {
-    margin: 16px 20px;
+    margin: 14px 20px;
     width: calc(100% - 40px);
     font-size: 15px;
-    padding: 15px;
+    padding: 14px;
   }
-  .ob-pricing-back { padding: 0 20px 20px; }
+  .ob-pricing-back { padding: 0 20px 18px; font-size: 13px; }
 }
