@@ -6,7 +6,7 @@ import './Success.css'
 async function markSubscribed(userId) {
   console.log('[Success] markSubscribed: start, userId=', userId)
   try {
-    await Promise.race([
+    const result = await Promise.race([
       supabase.from('user_profiles').upsert({
         id: userId,
         is_subscribed: true,
@@ -14,7 +14,11 @@ async function markSubscribed(userId) {
       }),
       new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000)),
     ])
-    console.log('[Success] markSubscribed: success')
+    if (result?.error) {
+      console.error('[Success] markSubscribed: DB error', result.error)
+    } else {
+      console.log('[Success] markSubscribed: success')
+    }
   } catch (err) {
     console.error('[Success] markSubscribed: threw or timed out', err.message)
   }
