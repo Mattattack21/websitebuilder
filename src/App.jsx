@@ -22,7 +22,10 @@ export default function App() {
   const [user, setUser]                     = useState(null)
   const [siteHtml, setSiteHtml]             = useState(null)
   const [businessData, setBusinessData]     = useState(null)
-  const [isSubscribed, setIsSubscribed]     = useState(null)
+  const [isSubscribed, setIsSubscribed]     = useState(() => {
+    const cached = localStorage.getItem('sf_subscribed')
+    return cached !== null ? cached === 'true' : null
+  })
   const [stripeCustomerId, setStripeCustomerId] = useState(null)
   const [siteUrl, setSiteUrl]               = useState(null)
   const [deploying, setDeploying]           = useState(false)
@@ -62,7 +65,7 @@ export default function App() {
   async function loadUserProfile(userId) {
     const { data: profile, error } = await Promise.race([
       supabase.from('user_profiles').select('*').eq('id', userId).single(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('profile timeout')), 6000)),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('profile timeout')), 20000)),
     ]).catch(err => {
       console.error('Profile fetch error or timeout:', err.message)
       return { data: null, error: err }
@@ -73,8 +76,10 @@ export default function App() {
     }
 
     if (profile) {
+      const subscribed = profile.is_subscribed ?? false
+      localStorage.setItem('sf_subscribed', String(subscribed))
       setSiteHtml(profile.site_html ?? null)
-      setIsSubscribed(profile.is_subscribed ?? false)
+      setIsSubscribed(subscribed)
       setStripeCustomerId(profile.stripe_customer_id ?? null)
       setSiteUrl(profile.site_url ?? null)
       setBusinessData({
@@ -113,7 +118,7 @@ export default function App() {
       console.warn('[App] restoreSession timed out — unblocking UI')
       aborted = true
       setInitializing(false)
-    }, 5000)
+    }, 15000)
 
     async function restoreSession() {
       try {
@@ -164,6 +169,7 @@ export default function App() {
         const { hasPending } = await loadUserProfile(session.user.id)
         if (hasPending) setShowFinishSetup(true)
       } else if (event === 'SIGNED_OUT') {
+        localStorage.removeItem('sf_subscribed')
         setUser(null)
         setSiteHtml(null)
         setBusinessData(null)
