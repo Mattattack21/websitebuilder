@@ -337,6 +337,7 @@ export default function App() {
         <Onboarding
           user={user}
           isSubscribed={isSubscribed}
+          businessData={businessData}
           onClose={() => setShowOnboarding(false)}
           onComplete={handleComplete}
         />

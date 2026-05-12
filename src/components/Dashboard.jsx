@@ -80,12 +80,12 @@ export default function Dashboard({ user, generatedHtml, regenerating, onSiteUpd
     return () => clearInterval(interval)
   }, [user])
 
-  // Update content
-  const [showUpdatePanel, setShowUpdatePanel] = useState(false)
-  const [updateRequest, setUpdateRequest] = useState('')
-  const [updating, setUpdating] = useState(false)
-  const [updateProgress, setUpdateProgress] = useState(0)
-  const [updateError, setUpdateError] = useState(null)
+  // AI edit chat
+  const [chatMessages, setChatMessages] = useState([])
+  const [chatInput, setChatInput]       = useState('')
+  const [chatUpdating, setChatUpdating] = useState(false)
+  const [chatProgress, setChatProgress] = useState(0)
+  const chatEndRef                      = useRef(null)
 
   // Copy link
   const [copied, setCopied] = useState(false)
@@ -122,27 +122,44 @@ export default function Dashboard({ user, generatedHtml, regenerating, onSiteUpd
     window.location.reload()
   }
 
-  async function handleUpdateSubmit(e) {
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [chatMessages])
+
+  async function handleChatSubmit(e) {
     e.preventDefault()
-    if (!updateRequest.trim()) return
-    setUpdating(true)
-    setUpdateProgress(0)
-    setUpdateError(null)
+    const req = chatInput.trim()
+    if (!req || chatUpdating) return
+
+    const userId  = Date.now()
+    const loadId  = userId + 1
+    setChatMessages(prev => [
+      ...prev,
+      { id: userId, role: 'user', text: req },
+      { id: loadId, role: 'loading', text: null },
+    ])
+    setChatInput('')
+    setChatUpdating(true)
+    setChatProgress(0)
 
     try {
       const html = await updateWebsite(
-        { currentHtml: siteHtml, request: updateRequest },
+        { currentHtml: siteHtml, request: req },
         user,
-        (pct) => setUpdateProgress(pct)
+        (pct) => setChatProgress(pct)
       )
       setSiteHtml(html)
       onSiteUpdate(html)
-      setUpdateRequest('')
-      setShowUpdatePanel(false)
-    } catch (err) {
-      setUpdateError('Something went wrong. Please try again.')
+      setChatMessages(prev => prev.map(m =>
+        m.id === loadId ? { ...m, role: 'assistant', text: '✓ Done! Scroll up to see your updated site.' } : m
+      ))
+    } catch {
+      setChatMessages(prev => prev.map(m =>
+        m.id === loadId ? { ...m, role: 'error', text: 'Something went wrong. Please try again.' } : m
+      ))
     } finally {
-      setUpdating(false)
+      setChatUpdating(false)
+      setChatProgress(0)
     }
   }
 
@@ -208,12 +225,6 @@ export default function Dashboard({ user, generatedHtml, regenerating, onSiteUpd
               <button className="dash-action-btn secondary" onClick={onChangeTheme}>
                 🎨 Change My Theme
               </button>
-              <button
-                className="dash-action-btn secondary"
-                onClick={() => { setShowUpdatePanel(v => !v); setUpdateError(null) }}
-              >
-                ✏️ Update My Content
-              </button>
             </div>
 
             {deploying ? (
@@ -239,47 +250,63 @@ export default function Dashboard({ user, generatedHtml, regenerating, onSiteUpd
               </div>
             ) : null}
 
-            {showUpdatePanel && (
-              <div className="dash-update-panel">
-                {updating ? (
-                  <div className="dash-update-progress">
-                    <p>Updating your website...</p>
-                    <div className="dash-progress-track">
-                      <div className="dash-progress-fill" style={{ width: `${updateProgress}%` }} />
-                    </div>
-                    <span className="dash-progress-pct">{updateProgress}%</span>
-                  </div>
-                ) : (
-                  <form onSubmit={handleUpdateSubmit}>
-                    <textarea
-                      className="dash-update-textarea"
-                      placeholder="Describe what you'd like to change... e.g. Update the phone number, add a lunch special, change the business hours"
-                      value={updateRequest}
-                      rows={4}
-                      onChange={e => setUpdateRequest(e.target.value)}
-                    />
-                    {updateError && <p className="dash-error">{updateError}</p>}
-                    <div className="dash-update-footer">
-                      <button type="button" className="dash-action-btn ghost" onClick={() => setShowUpdatePanel(false)}>
-                        Cancel
-                      </button>
-                      <button type="submit" className="dash-action-btn primary" disabled={!updateRequest.trim()}>
-                        Apply Changes
-                      </button>
-                    </div>
-                  </form>
-                )}
-              </div>
-            )}
-
             {siteHtml ? (
-              <div className="dash-iframe-wrap">
-                <iframe
-                  key={blobUrl}
-                  src={blobUrl}
-                  title="Your website preview"
-                />
-              </div>
+              <>
+                <div className="dash-iframe-wrap">
+                  <iframe
+                    key={blobUrl}
+                    src={blobUrl}
+                    title="Your website preview"
+                  />
+                </div>
+
+                <div className="dash-chat">
+                  <div className="dash-chat-header">
+                    <p className="dash-chat-title">Edit Your Website</p>
+                    <p className="dash-chat-subtitle">Describe any change and AI will update your site instantly.</p>
+                  </div>
+                  <div className="dash-chat-messages">
+                    {chatMessages.length === 0 && (
+                      <p className="dash-chat-placeholder">
+                        Try: "Change my phone number to 555-1234" · "Update my business hours" · "Add a summer special"
+                      </p>
+                    )}
+                    {chatMessages.map(m => (
+                      <div key={m.id} className={`dash-chat-msg dash-chat-msg-${m.role}`}>
+                        <span className="dash-chat-bubble">
+                          {m.role === 'loading'
+                            ? <span className="dash-chat-typing">●●●</span>
+                            : m.text}
+                        </span>
+                      </div>
+                    ))}
+                    <div ref={chatEndRef} />
+                  </div>
+                  {chatUpdating && (
+                    <div className="dash-chat-progress">
+                      <div className="dash-progress-track">
+                        <div className="dash-progress-fill" style={{ width: `${chatProgress}%` }} />
+                      </div>
+                    </div>
+                  )}
+                  <form className="dash-chat-input-row" onSubmit={handleChatSubmit}>
+                    <input
+                      className="dash-chat-input"
+                      placeholder={chatUpdating ? 'Updating your site…' : 'Describe a change to make…'}
+                      value={chatInput}
+                      onChange={e => setChatInput(e.target.value)}
+                      disabled={chatUpdating}
+                    />
+                    <button
+                      type="submit"
+                      className="dash-chat-send"
+                      disabled={!chatInput.trim() || chatUpdating}
+                    >
+                      →
+                    </button>
+                  </form>
+                </div>
+              </>
             ) : regenerating ? (
               <div className="dash-empty">
                 <div className="dash-regen-spinner" />
@@ -299,15 +326,6 @@ export default function Dashboard({ user, generatedHtml, regenerating, onSiteUpd
                 >
                   {onRegenerate ? '🔄 Regenerate My Website' : 'Build My Website'}
                 </button>
-                {onRegenerate && (
-                  <button
-                    className="dash-action-btn secondary"
-                    style={{ marginTop: '10px' }}
-                    onClick={onChangeTheme}
-                  >
-                    🎨 Start Over with New Theme
-                  </button>
-                )}
               </div>
             )}
           </div>

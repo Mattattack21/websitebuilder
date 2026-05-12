@@ -35,10 +35,16 @@ const FEATURES = [
 
 const STEP_LABELS = ['Theme', 'Business']
 
-export default function Onboarding({ onClose, onComplete, user, isSubscribed }) {
+export default function Onboarding({ onClose, onComplete, user, isSubscribed, businessData }) {
   const [step, setStep]               = useState(1)
-  const [vibe, setVibe]               = useState(null)
-  const [form, setForm]               = useState({ name: '', type: '', city: '', state: '', about: '' })
+  const [vibe, setVibe]               = useState(businessData?.themeVibe ?? null)
+  const [form, setForm]               = useState({
+    name:  businessData?.businessName        ?? '',
+    type:  businessData?.businessType        ?? '',
+    city:  businessData?.city                ?? '',
+    state: businessData?.state               ?? '',
+    about: businessData?.businessDescription ?? '',
+  })
   const [genProgress, setGenProgress] = useState(0)
   const [genMsgIdx, setGenMsgIdx]     = useState(0)
   const [generatedHtml, setGeneratedHtml] = useState(null)
@@ -129,6 +135,8 @@ export default function Onboarding({ onClose, onComplete, user, isSubscribed }) 
 
   const formValid = form.name.trim() && form.type && form.city.trim() && form.state.trim()
   const canNext   = (step === 1 && vibe) || (step === 2 && formValid)
+  // When business data is already known, theme selection jumps straight to generation
+  const hasExistingData = !!businessData?.businessName
 
   const countdownMins = String(Math.floor(countdown / 60)).padStart(2, '0')
   const countdownSecs = String(countdown % 60).padStart(2, '0')
@@ -591,7 +599,10 @@ export default function Onboarding({ onClose, onComplete, user, isSubscribed }) 
           <button
             className="ob-btn-next"
             disabled={!canNext}
-            onClick={() => setStep(s => s + 1)}
+            onClick={() => {
+              if (step === 1 && hasExistingData) setStep(3)
+              else setStep(s => s + 1)
+            }}
           >
             {step === 2 ? 'Build My Website →' : 'Next →'}
           </button>
