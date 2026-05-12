@@ -3,21 +3,26 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../utils/supabase'
 import './Success.css'
 
-async function markSubscribed(userId) {
-  console.log('[Success] markSubscribed: start, userId=', userId)
+async function markSubscribed() {
+  console.log('[Success] markSubscribed: start')
   try {
-    const result = await Promise.race([
-      supabase.from('user_profiles').upsert({
-        id: userId,
-        is_subscribed: true,
-        updated_at: new Date().toISOString(),
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.access_token) {
+      console.warn('[Success] markSubscribed: no session token — skipping')
+      return
+    }
+    const res = await Promise.race([
+      fetch('/.netlify/functions/mark-subscribed', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session.access_token}` },
       }),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000)),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 10000)),
     ])
-    if (result?.error) {
-      console.error('[Success] markSubscribed: DB error', result.error)
+    const body = await res.json()
+    if (!res.ok) {
+      console.error('[Success] markSubscribed: server error', body)
     } else {
-      console.log('[Success] markSubscribed: success')
+      console.log('[Success] markSubscribed: success', body)
     }
   } catch (err) {
     console.error('[Success] markSubscribed: threw or timed out', err.message)
@@ -60,7 +65,7 @@ export default function Success() {
         const session = data?.session
         if (session?.user) {
           console.log('[Success] checkSession: active session found for', session.user.email)
-          await markSubscribed(session.user.id)
+          await markSubscribed()
           console.log('[Success] checkSession: navigating to /dashboard')
           navigate('/dashboard', { replace: true })
         } else {
@@ -100,7 +105,7 @@ export default function Success() {
         return
       }
       if (data?.user) {
-        await markSubscribed(data.user.id)
+        await markSubscribed()
         console.log('[Success] handleSignup: navigating to /dashboard')
         window.location.replace('/dashboard')
       } else {
@@ -132,7 +137,7 @@ export default function Success() {
         return
       }
       if (data?.user) {
-        await markSubscribed(data.user.id)
+        await markSubscribed()
         console.log('[Success] handleLogin: navigating to /dashboard')
         window.location.replace('/dashboard')
       }
