@@ -98,7 +98,7 @@ export default function Success() {
       if (data?.user) {
         await markSubscribed(data.user.id)
         console.log('[Success] handleSignup: navigating to /dashboard')
-        navigate('/dashboard', { replace: true })
+        window.location.replace('/dashboard')
       } else {
         console.warn('[Success] handleSignup: no user — email confirmation may be required')
         setError('Check your email for a confirmation link.')
@@ -130,7 +130,7 @@ export default function Success() {
       if (data?.user) {
         await markSubscribed(data.user.id)
         console.log('[Success] handleLogin: navigating to /dashboard')
-        navigate('/dashboard', { replace: true })
+        window.location.replace('/dashboard')
       }
     } catch (err) {
       console.error('[Success] handleLogin: threw', err)

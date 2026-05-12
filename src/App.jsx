@@ -359,6 +359,15 @@ export default function App() {
         <button className="cta-btn" onClick={() => redirectToCheckout(user.id, user.email)}>
           Subscribe Now <span className="cta-arrow">→</span>
         </button>
+        <p className="cta-note" style={{ marginTop: 24 }}>
+          Already paid?{' '}
+          <button
+            style={{ background: 'none', border: 'none', color: '#7c3aed', fontWeight: 700, cursor: 'pointer', padding: 0, fontSize: 'inherit' }}
+            onClick={() => loadUserProfile(user.id)}
+          >
+            Refresh my account →
+          </button>
+        </p>
       </div>
       <div className="glow glow-1" />
       <div className="glow glow-2" />
