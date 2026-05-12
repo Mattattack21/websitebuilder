@@ -13,13 +13,19 @@ import Success from './pages/Success'
 
 export default function App() {
   const navigate = useNavigate()
-  const [initializing, setInitializing]     = useState(true)
+  // If we have a cached user identity, skip the splash and render immediately.
+  // Supabase session validation runs in the background and updates state when ready.
+  const [initializing, setInitializing]     = useState(() => !localStorage.getItem('sf_user_id'))
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [showFinishSetup, setShowFinishSetup] = useState(false)
   const [showAuth, setShowAuth]             = useState(false)
   const [authInitialTab, setAuthInitialTab] = useState('login')
   const [regenerating, setRegenerating]     = useState(false)
-  const [user, setUser]                     = useState(null)
+  const [user, setUser]                     = useState(() => {
+    const id    = localStorage.getItem('sf_user_id')
+    const email = localStorage.getItem('sf_user_email')
+    return id ? { id, email } : null
+  })
   const [siteHtml, setSiteHtml]             = useState(null)
   const [businessData, setBusinessData]     = useState(null)
   const [isSubscribed, setIsSubscribed]     = useState(() => {
@@ -141,12 +147,19 @@ export default function App() {
 
         const session = data?.session
         if (!session?.user) {
-          console.log('[App] restoreSession: no active session')
+          console.log('[App] restoreSession: no active session — clearing cache')
+          localStorage.removeItem('sf_user_id')
+          localStorage.removeItem('sf_user_email')
+          localStorage.removeItem('sf_subscribed')
+          setUser(null)
+          setIsSubscribed(null)
           return
         }
 
         console.log('[App] restoreSession: session found for', session.user.email)
         const sessionUser = session.user
+        localStorage.setItem('sf_user_id', sessionUser.id)
+        if (sessionUser.email) localStorage.setItem('sf_user_email', sessionUser.email)
         setUser(sessionUser)
         clearTimeout(fallback)
         if (!aborted) setInitializing(false)
@@ -166,12 +179,16 @@ export default function App() {
     // React to new sign-ins from other pages (e.g. Success.jsx after Stripe)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
+        localStorage.setItem('sf_user_id', session.user.id)
+        if (session.user.email) localStorage.setItem('sf_user_email', session.user.email)
         setUser(session.user)
         setShowAuth(false)
         const { hasPending } = await loadUserProfile(session.user.id)
         if (hasPending) setShowFinishSetup(true)
       } else if (event === 'SIGNED_OUT') {
         localStorage.removeItem('sf_subscribed')
+        localStorage.removeItem('sf_user_id')
+        localStorage.removeItem('sf_user_email')
         setUser(null)
         setSiteHtml(null)
         setBusinessData(null)
