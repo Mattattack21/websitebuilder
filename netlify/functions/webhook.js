@@ -37,7 +37,6 @@ export const handler = async (event) => {
             id: userId,
             is_subscribed: true,
             stripe_customer_id: session.customer,
-            updated_at: new Date().toISOString(),
           })
         }
         break
@@ -47,7 +46,7 @@ export const handler = async (event) => {
         const subscription = stripeEvent.data.object
         await supabase
           .from('user_profiles')
-          .update({ is_subscribed: false, updated_at: new Date().toISOString() })
+          .update({ is_subscribed: false })
           .eq('stripe_customer_id', subscription.customer)
         break
       }

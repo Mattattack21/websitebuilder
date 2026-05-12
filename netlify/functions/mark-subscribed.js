@@ -28,7 +28,6 @@ export const handler = async (event) => {
     const { error } = await adminClient.from('user_profiles').upsert({
       id: user.id,
       is_subscribed: true,
-      updated_at: new Date().toISOString(),
     })
 
     if (error) {
