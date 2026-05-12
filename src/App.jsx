@@ -26,8 +26,10 @@ export default function App() {
     const email = localStorage.getItem('sf_user_email')
     return id ? { id, email } : null
   })
-  const [siteHtml, setSiteHtml]             = useState(null)
-  const [businessData, setBusinessData]     = useState(null)
+  const [siteHtml, setSiteHtml]             = useState(() => localStorage.getItem('sf_site_html') ?? null)
+  const [businessData, setBusinessData]     = useState(() => {
+    try { return JSON.parse(localStorage.getItem('sf_business_data')) } catch { return null }
+  })
   const [isSubscribed, setIsSubscribed]     = useState(() => {
     const cached = localStorage.getItem('sf_subscribed')
     return cached !== null ? cached === 'true' : null
@@ -189,6 +191,8 @@ export default function App() {
         localStorage.removeItem('sf_subscribed')
         localStorage.removeItem('sf_user_id')
         localStorage.removeItem('sf_user_email')
+        localStorage.removeItem('sf_site_html')
+        localStorage.removeItem('sf_business_data')
         setUser(null)
         setSiteHtml(null)
         setBusinessData(null)
@@ -200,6 +204,15 @@ export default function App() {
 
     return () => { aborted = true; clearTimeout(fallback); subscription.unsubscribe() }
   }, [])
+
+  // ── Persist site HTML and business data locally so dashboard survives slow Supabase ──
+  useEffect(() => {
+    if (siteHtml) localStorage.setItem('sf_site_html', siteHtml)
+  }, [siteHtml])
+
+  useEffect(() => {
+    if (businessData) localStorage.setItem('sf_business_data', JSON.stringify(businessData))
+  }, [businessData])
 
   // ── Deploy to Netlify after any HTML update ───────────────────────────────
   async function triggerDeploy(html, currentUser, bData) {
