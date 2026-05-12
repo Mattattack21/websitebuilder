@@ -325,7 +325,7 @@ export default function App() {
           <h1>Your Business Deserves a<br /><span className="gradient-text">Beautiful Website</span></h1>
           <p className="subheadline">Built in 60 seconds. No experience needed.</p>
           <button className="cta-btn" onClick={() => setShowOnboarding(true)}>
-            Build My Free Website ✓ <span className="cta-arrow">→</span>
+            Build My Free Website <span className="cta-arrow">→</span>
           </button>
           <p className="cta-note">No credit card required &nbsp;·&nbsp; See your site before you pay</p>
         </div>
