@@ -60,14 +60,16 @@ export default function App() {
   }
 
   async function loadUserProfile(userId) {
-    const { data: profile, error } = await supabase
-      .from('user_profiles')
-      .select('*')
-      .eq('id', userId)
-      .single()
+    const { data: profile, error } = await Promise.race([
+      supabase.from('user_profiles').select('*').eq('id', userId).single(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('profile timeout')), 6000)),
+    ]).catch(err => {
+      console.error('Profile fetch error or timeout:', err.message)
+      return { data: null, error: err }
+    })
 
     if (error && error.code !== 'PGRST116') {
-      console.error('Profile fetch error:', error)
+      console.error('Profile fetch error:', error.message ?? error)
     }
 
     if (profile) {
@@ -139,6 +141,8 @@ export default function App() {
         console.log('[App] restoreSession: session found for', session.user.email)
         const sessionUser = session.user
         setUser(sessionUser)
+        clearTimeout(fallback)
+        if (!aborted) setInitializing(false)
 
         const { hasPending } = await loadUserProfile(sessionUser.id)
         if (!aborted && hasPending) setShowFinishSetup(true)
