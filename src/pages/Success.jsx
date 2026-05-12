@@ -7,8 +7,16 @@ export default function Success() {
 
   useEffect(() => {
     async function activate() {
+      // /success is only reachable via Stripe redirect after payment — cache immediately
+      // so the dashboard route doesn't bounce the user to /pricing while DB catches up
+      localStorage.setItem('sf_subscribed', 'true')
+
       try {
-        const { data: { session } } = await supabase.auth.getSession()
+        const result = await Promise.race([
+          supabase.auth.getSession(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('session timeout')), 10000)),
+        ])
+        const session = result?.data?.session
         if (session?.access_token) {
           await Promise.race([
             fetch('/.netlify/functions/mark-subscribed', {

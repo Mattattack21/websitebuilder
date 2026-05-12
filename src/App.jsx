@@ -102,7 +102,9 @@ export default function App() {
 
     // New user with no profile — check for data saved before Stripe redirect
     const hasPending = await loadPendingData(userId)
-    setIsSubscribed(false)
+    // Don't override a cached "subscribed" state — the DB row may not exist yet
+    // (e.g. Stripe webhook is delayed or mark-subscribed timed out on /success)
+    if (localStorage.getItem('sf_subscribed') !== 'true') setIsSubscribed(false)
     return { hasProfile: false, hasPending }
   }
 
