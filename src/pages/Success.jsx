@@ -39,50 +39,20 @@ export default function Success() {
   const [loading, setLoading]             = useState(false)
   const [error, setError]                 = useState(null)
 
-  // On mount — if already logged in, mark subscribed and go to dashboard.
-  // Falls back to showing the signup form after 5 seconds so the page never hangs.
+  // On mount — clear any stale session token so getSession returns immediately
+  // (a stored expired token causes getSession to hang on network refresh).
+  // Success page is only reached via Stripe redirect, so always show the form fresh.
   useEffect(() => {
     console.log('[Success] mount, url=', window.location.href)
-
-    // 5-second safety net — if getSession hangs or throws, show the form anyway
-    const fallback = setTimeout(() => {
-      console.warn('[Success] 5s timeout reached — forcing signup form visible')
-      setChecking(false)
-    }, 5000)
-
-    async function checkSession() {
-      try {
-        console.log('[Success] checkSession: calling supabase.auth.getSession')
-        const { data, error: sessionError } = await supabase.auth.getSession()
-        console.log('[Success] checkSession: getSession returned', { session: !!data?.session, sessionError })
-
-        if (sessionError) {
-          console.error('[Success] checkSession: session error', sessionError)
-          setChecking(false)
-          return
+    try {
+      for (const key of Object.keys(localStorage)) {
+        if (key.startsWith('sb-') && key.endsWith('-auth-token')) {
+          localStorage.removeItem(key)
         }
-
-        const session = data?.session
-        if (session?.user) {
-          console.log('[Success] checkSession: active session found for', session.user.email)
-          await markSubscribed()
-          console.log('[Success] checkSession: navigating to /dashboard')
-          navigate('/dashboard', { replace: true })
-        } else {
-          console.log('[Success] checkSession: no active session — showing signup form')
-          setChecking(false)
-        }
-      } catch (err) {
-        console.error('[Success] checkSession: threw', err)
-        setChecking(false)
-      } finally {
-        clearTimeout(fallback)
       }
-    }
-
-    checkSession()
-    return () => clearTimeout(fallback)
-  }, [navigate])
+    } catch {}
+    setChecking(false)
+  }, [])
 
   async function handleSignup(e) {
     e.preventDefault()
