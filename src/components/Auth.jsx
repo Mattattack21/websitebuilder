@@ -142,7 +142,7 @@ export default function Auth({ onSuccess, onBack, initialTab }) {
         </form>
 
         <button className="auth-back" onClick={onBack}>
-          ← Back to pricing
+          ← Back
         </button>
 
       </div>

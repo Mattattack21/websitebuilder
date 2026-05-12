@@ -800,3 +800,29 @@
   }
   .ob-pricing-back { padding: 0 20px 18px; font-size: 13px; }
 }
+
+/* ── Auth step (step 5) ──────────────────────────────────── */
+.ob-auth-tabs {
+  display: flex;
+  border-bottom: 2px solid #e5e7eb;
+  margin-bottom: 20px;
+}
+
+.ob-auth-tab {
+  flex: 1;
+  padding: 10px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #6b7280;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.ob-auth-tab.active {
+  color: #7c3aed;
+  border-bottom-color: #7c3aed;
+}

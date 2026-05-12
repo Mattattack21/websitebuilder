@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\matja\\\\websitebuilder\" -Recurse -Directory | Select-Object -First 20 | ForEach-Object { $_.FullName })",
+      "WebSearch",
+      "Bash(gh api *)"
+    ]
+  }
+}

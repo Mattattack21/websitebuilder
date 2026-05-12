@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import './Onboarding.css'
+import { supabase } from '../utils/supabase'
 import { generateWebsite, suggestIndustries } from '../lib/generateWebsite'
 import { redirectToCheckout } from '../utils/stripe'
 
@@ -34,7 +35,7 @@ const FEATURES = [
 
 const STEP_LABELS = ['Theme', 'Business']
 
-export default function Onboarding({ onClose, onComplete, user }) {
+export default function Onboarding({ onClose, onComplete, user, isSubscribed }) {
   const [step, setStep]               = useState(1)
   const [vibe, setVibe]               = useState(null)
   const [form, setForm]               = useState({ name: '', type: '', city: '', state: '', about: '' })
@@ -48,21 +49,22 @@ export default function Onboarding({ onClose, onComplete, user }) {
   const [checkoutError, setCheckoutError]     = useState(null)
   const [industrySuggestions, setIndustrySuggestions] = useState([])
   const [suggestingIndustry, setSuggestingIndustry]   = useState(false)
+
+  // Auth step state
+  const [authUser, setAuthUser]           = useState(null)
+  const [authTab, setAuthTab]             = useState('signup')
+  const [authEmail, setAuthEmail]         = useState('')
+  const [authPassword, setAuthPassword]   = useState('')
+  const [authConfirmPw, setAuthConfirmPw] = useState('')
+  const [authLoading, setAuthLoading]     = useState(false)
+  const [authError, setAuthError]         = useState(null)
+
   const cancelledRef = useRef(false)
   const iframeRef    = useRef(null)
 
-  // Set srcdoc directly on the DOM element after mount to avoid React timing issues
   useEffect(() => {
     if (!generatedHtml || !iframeRef.current) return
-    console.log('[SF] Setting srcdoc, length:', generatedHtml?.length, 'type:', typeof generatedHtml)
     iframeRef.current.srcdoc = generatedHtml
-    console.log('[SF] srcdoc set directly on iframe element')
-    setTimeout(() => {
-      const doc = iframeRef.current?.contentDocument
-      console.log('[SF] iframe body innerHTML length:', doc?.body?.innerHTML?.length)
-      console.log('[SF] iframe body background:', doc?.body?.style?.background)
-      console.log('[SF] iframe children count:', doc?.body?.children?.length)
-    }, 1000)
   }, [generatedHtml])
 
   useEffect(() => {
@@ -87,29 +89,26 @@ export default function Onboarding({ onClose, onComplete, user }) {
         state:               form.state,
         businessDescription: form.about,
       },
-      null, // No user — don't save to Supabase yet; persisted via localStorage before checkout
+      null,
       (pct) => { if (!cancelledRef.current) setGenProgress(pct) },
       () => { if (!cancelledRef.current) setGenRetryMsg('Generation took too long, trying again…') }
     )
       .then(html => {
         if (cancelledRef.current) return
-        console.log('[SF] Generation complete. HTML length:', html?.length ?? 0)
-        console.log('[SF] HTML starts with:', html?.slice(0, 100) ?? 'NULL')
         setGeneratedHtml(html)
         setStep(4)
       })
       .catch(err => {
         if (cancelledRef.current) return
-        console.error('[SF] Generation failed:', err)
         setGenError(err?.message ?? 'Something went wrong. Please try again.')
       })
 
     return () => { cancelledRef.current = true }
   }, [step])
 
-  // Countdown timer — starts when pricing screen opens
+  // Countdown timer for pricing step (step 6)
   useEffect(() => {
-    if (step !== 5) return
+    if (step !== 6) return
     setCountdown(14 * 60 + 59)
     const timer = setInterval(() => setCountdown(c => (c <= 1 ? 0 : c - 1)), 1000)
     return () => clearInterval(timer)
@@ -135,46 +134,108 @@ export default function Onboarding({ onClose, onComplete, user }) {
   const countdownSecs = String(countdown % 60).padStart(2, '0')
 
   // ── Step 4: "Go live" handler ─────────────────────────────────────────────
-  // Authenticated users (theme change) skip pricing and apply directly.
-  // New users proceed to the pricing + Stripe checkout step.
   function handleGoLive() {
-    if (user) {
-      onComplete(user, generatedHtml, {
-        themeVibe:           vibe,
-        businessName:        form.name,
-        businessType:        form.type,
-        city:                form.city,
-        state:               form.state,
-        businessDescription: form.about,
-      })
-    } else {
-      setStep(5)
-    }
-  }
-
-  // ── Step 5: Stripe checkout ───────────────────────────────────────────────
-  async function handleCheckout() {
-    setCheckoutLoading(true)
-    setCheckoutError(null)
-
-    // Persist generated website + business data through the Stripe redirect.
-    // App.jsx reads these from localStorage after the user signs up on /success.
-    localStorage.setItem('sf_pending_html', generatedHtml)
-    localStorage.setItem('sf_pending_data', JSON.stringify({
+    const bData = {
       themeVibe:           vibe,
       businessName:        form.name,
       businessType:        form.type,
       city:                form.city,
       state:               form.state,
       businessDescription: form.about,
-    }))
+    }
+    if (user && isSubscribed) {
+      // Subscribed user doing a theme change — apply directly
+      onComplete(user, generatedHtml, bData)
+    } else if (user && !isSubscribed) {
+      // Logged in but not subscribed — skip auth, go straight to pricing
+      setAuthUser(user)
+      setStep(6)
+    } else {
+      // Anonymous — collect account first
+      setStep(5)
+    }
+  }
 
+  // ── Step 5: Account creation ──────────────────────────────────────────────
+  async function handleAuthSuccess(newUser) {
+    const bData = {
+      themeVibe:           vibe,
+      businessName:        form.name,
+      businessType:        form.type,
+      city:                form.city,
+      state:               form.state,
+      businessDescription: form.about,
+    }
+    setAuthUser(newUser)
+
+    // Save generated site to their profile immediately
+    supabase.from('user_profiles').upsert({
+      id:                   newUser.id,
+      site_html:            generatedHtml,
+      theme_vibe:           vibe,
+      business_name:        form.name,
+      business_type:        form.type,
+      city:                 form.city,
+      state:                form.state,
+      business_description: form.about,
+      setup_complete:       false,
+      updated_at:           new Date().toISOString(),
+    }).then(null, () => {})
+
+    // Check if they're already subscribed (returning user)
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('is_subscribed')
+      .eq('id', newUser.id)
+      .maybeSingle()
+
+    if (profile?.is_subscribed) {
+      onComplete(newUser, generatedHtml, bData)
+    } else {
+      setStep(6)
+    }
+  }
+
+  async function handleAuthSubmit(e) {
+    e.preventDefault()
+    setAuthError(null)
+    if (authTab === 'signup' && authPassword !== authConfirmPw) {
+      setAuthError('Passwords do not match.')
+      return
+    }
+    if (authPassword.length < 6) {
+      setAuthError('Password must be at least 6 characters.')
+      return
+    }
+    setAuthLoading(true)
     try {
-      await redirectToCheckout(null, null)
+      let data, error
+      if (authTab === 'signup') {
+        ({ data, error } = await supabase.auth.signUp({ email: authEmail, password: authPassword }))
+      } else {
+        ({ data, error } = await supabase.auth.signInWithPassword({ email: authEmail, password: authPassword }))
+      }
+      if (error) { setAuthError(error.message); return }
+      if (data?.user) {
+        await handleAuthSuccess(data.user)
+      } else {
+        setAuthError('Check your email for a confirmation link.')
+      }
+    } catch (err) {
+      setAuthError('Something went wrong. Please try again.')
+    } finally {
+      setAuthLoading(false)
+    }
+  }
+
+  // ── Step 6: Stripe checkout ───────────────────────────────────────────────
+  async function handleCheckout() {
+    setCheckoutLoading(true)
+    setCheckoutError(null)
+    try {
+      await redirectToCheckout(authUser?.id ?? null, authUser?.email ?? null)
     } catch (err) {
       console.error('Checkout error:', err)
-      localStorage.removeItem('sf_pending_html')
-      localStorage.removeItem('sf_pending_data')
       setCheckoutError('Something went wrong. Please try again.')
       setCheckoutLoading(false)
     }
@@ -208,10 +269,6 @@ export default function Onboarding({ onClose, onComplete, user }) {
 
   // ── Step 4: Preview ───────────────────────────────────────────────────────
   if (step === 4) {
-    console.log('[SF] Preview step reached')
-    console.log('[SF] generatedHtml type:', typeof generatedHtml)
-    console.log('[SF] generatedHtml length:', generatedHtml?.length ?? 0)
-    console.log('[SF] generatedHtml preview:', generatedHtml?.slice(0, 200) ?? 'NULL/EMPTY')
     return (
       <div className="ob-overlay">
         <div className="ob-preview-wrap">
@@ -242,16 +299,106 @@ export default function Onboarding({ onClose, onComplete, user }) {
             ref={iframeRef}
             className="ob-preview-iframe"
             title="Your generated website"
-            onLoad={() => console.log('[SF] iframe onLoad fired')}
-            onError={(e) => console.log('[SF] iframe onError:', e)}
           />
         </div>
       </div>
     )
   }
 
-  // ── Step 5: Pricing → Stripe checkout ────────────────────────────────────
+  // ── Step 5: Create account ────────────────────────────────────────────────
   if (step === 5) {
+    return (
+      <div className="ob-overlay">
+        <div className="ob-modal">
+          <div className="ob-header">
+            <div className="ob-header-top">
+              <div style={{ flex: 1 }} />
+              <button className="ob-close" onClick={onClose} aria-label="Close">✕</button>
+            </div>
+          </div>
+          <div className="ob-content">
+            <div className="ob-section">
+              <h2>Save your website</h2>
+              <p className="ob-sub">Create an account to publish and manage your site.</p>
+
+              <div className="ob-auth-tabs">
+                <button
+                  type="button"
+                  className={`ob-auth-tab${authTab === 'signup' ? ' active' : ''}`}
+                  onClick={() => { setAuthTab('signup'); setAuthError(null) }}
+                >
+                  Sign Up
+                </button>
+                <button
+                  type="button"
+                  className={`ob-auth-tab${authTab === 'login' ? ' active' : ''}`}
+                  onClick={() => { setAuthTab('login'); setAuthError(null) }}
+                >
+                  Log In
+                </button>
+              </div>
+
+              <form className="ob-form" onSubmit={handleAuthSubmit} noValidate>
+                <div className="ob-field">
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    placeholder="you@example.com"
+                    value={authEmail}
+                    onChange={e => setAuthEmail(e.target.value)}
+                    required
+                    autoComplete="email"
+                    autoFocus
+                  />
+                </div>
+                <div className="ob-field">
+                  <label>Password</label>
+                  <input
+                    type="password"
+                    placeholder="••••••••"
+                    value={authPassword}
+                    onChange={e => setAuthPassword(e.target.value)}
+                    required
+                    autoComplete={authTab === 'signup' ? 'new-password' : 'current-password'}
+                  />
+                </div>
+                {authTab === 'signup' && (
+                  <div className="ob-field">
+                    <label>Confirm Password</label>
+                    <input
+                      type="password"
+                      placeholder="••••••••"
+                      value={authConfirmPw}
+                      onChange={e => setAuthConfirmPw(e.target.value)}
+                      required
+                      autoComplete="new-password"
+                    />
+                  </div>
+                )}
+                {authError && <p className="ob-gen-error">{authError}</p>}
+                <button
+                  className="ob-btn-next"
+                  type="submit"
+                  disabled={authLoading}
+                  style={{ width: '100%', marginTop: 8 }}
+                >
+                  {authLoading
+                    ? 'Please wait...'
+                    : authTab === 'signup' ? 'Create Account →' : 'Log In →'}
+                </button>
+              </form>
+            </div>
+          </div>
+          <div className="ob-footer">
+            <button className="ob-btn-back" onClick={() => setStep(4)}>← Back</button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Step 6: Pricing → Stripe checkout ────────────────────────────────────
+  if (step === 6) {
     return (
       <div className="ob-overlay ob-pricing-overlay">
         <div className="ob-pricing-scroll">
@@ -306,8 +453,8 @@ export default function Onboarding({ onClose, onComplete, user }) {
               </p>
             )}
 
-            <button className="ob-pricing-back" onClick={() => setStep(4)}>
-              ← Back to preview
+            <button className="ob-pricing-back" onClick={() => setStep(5)}>
+              ← Back
             </button>
 
           </div>
